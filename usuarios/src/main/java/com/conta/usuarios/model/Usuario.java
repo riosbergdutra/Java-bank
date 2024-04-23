@@ -65,6 +65,9 @@ public class Usuario implements UserDetails {
     @Column(name = "tipo_conta")
     public TipoConta tipoConta;
 
+    @Column(name = "data_conta")
+    public Date dataConta;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == RoleEnum.ADMIN) {
