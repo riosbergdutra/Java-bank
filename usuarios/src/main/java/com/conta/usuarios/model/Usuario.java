@@ -15,6 +15,8 @@ import com.conta.usuarios.enums.TipoConta;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,39 +36,40 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id_usuario")
 public class Usuario implements UserDetails {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id 
-    public Long id_usuario;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id_usuario;
 
     @Column(nullable = false)
-    public String nome;
+    private String nome;
 
     @Column(nullable = false)
-    public String email;
+    private String email;
 
     @Column(nullable = false)
-    public String senha;
+    private String senha;
 
     @Column(nullable = false)
-    public String cpf;
+    private String cpf;
 
     @Column(nullable = false, name= "data_nascimento")
-    public Date dataNascimento;
+    private Date dataNascimento;
 
     @Column(nullable = false)
-    public String endereco;
+    private String endereco;
 
     @Column(nullable = false)
-    public String cep;
+    private String cep;
 
-    @Column(nullable = false)
-    public RoleEnum role;
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_conta")
-    public TipoConta tipoConta;
+    private TipoConta tipoConta;
 
     @Column(name = "data_conta")
-    public Date dataConta;
+    private Date dataConta;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
