@@ -8,5 +8,6 @@ CREATE TABLE usuarios (
     endereco VARCHAR(255) NOT NULL,
     cep VARCHAR(9) NOT NULL,
     role VARCHAR(255) NOT NULL,
-    tipo_conta VARCHAR(255)
+    tipo_conta VARCHAR(255),
+    data_conta DATE NOT NULL
 );
