@@ -51,6 +51,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Salva o novo usuário no banco de dados
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
+        // Envie a mensagem para a fila SQS com texto simples
+        String queueUrl = "http://localhost:4566/000000000000/payments";
+        String messageBody = "ID do Pagamento: " + usuarioCriado.getId_usuario() + "\n" +
+                     "Valor: " + usuarioCriado.getValor() + "\n" +
+                     "Endereço: " + usuarioCriado.getEndereco();
+sqsTemplate.send(queueUrl, messageBody);
 
         // Retorna um DTO de resposta com os dados do novo usuário
         return new UsuarioResponseDto(
