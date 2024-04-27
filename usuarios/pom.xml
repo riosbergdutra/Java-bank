@@ -61,7 +61,28 @@
   			<artifactId>java-jwt</artifactId>
   			<version>4.4.0</version>
 		</dependency>
+
+		<dependency>
+    <groupId>io.awspring.cloud</groupId>
+    <artifactId>spring-cloud-aws-starter-dynamodb</artifactId>
+	</dependency>
+
+	<dependency>
+    <groupId>io.awspring.cloud</groupId>
+    <artifactId>spring-cloud-aws-starter-sqs</artifactId>
+	</dependency>
 	</dependencies>
+	<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.awspring.cloud</groupId>
+            <artifactId>spring-cloud-aws-dependencies</artifactId>
+            <version>3.1.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 
 	<build>
 		<plugins>
