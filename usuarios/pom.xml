@@ -62,11 +62,6 @@
   			<version>4.4.0</version>
 		</dependency>
 
-		<dependency>
-    <groupId>io.awspring.cloud</groupId>
-    <artifactId>spring-cloud-aws-starter-dynamodb</artifactId>
-	</dependency>
-
 	<dependency>
     <groupId>io.awspring.cloud</groupId>
     <artifactId>spring-cloud-aws-starter-sqs</artifactId>
