@@ -4,11 +4,12 @@ import com.conta.usuarios.dtos.req.UsuarioRequestDto;
 import com.conta.usuarios.dtos.res.UsuarioResponseDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UsuarioService {
     UsuarioResponseDto criarUsuarioService(UsuarioRequestDto usuarioDto);
-    UsuarioResponseDto buscarUsuarioPorIdService(Long id);
+    UsuarioResponseDto buscarUsuarioPorIdService(UUID id);
     List<UsuarioResponseDto> listarUsuariosService();
-    UsuarioResponseDto atualizarUsuarioService(Long id, UsuarioRequestDto usuarioDto);
-    void deletarUsuarioService(Long id);
+    UsuarioResponseDto atualizarUsuarioService(UUID id, UsuarioRequestDto usuarioDto);
+    void deletarUsuarioService(UUID id);
 }
