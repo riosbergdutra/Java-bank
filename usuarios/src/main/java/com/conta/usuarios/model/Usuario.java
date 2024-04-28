@@ -5,6 +5,7 @@ package com.conta.usuarios.model;
 import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,8 +38,9 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "id_usuario")
 public class Usuario implements UserDetails {
     @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_usuario;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(unique = true)
+    private UUID id_usuario;
 
     @Column(nullable = false)
     private String nome;
