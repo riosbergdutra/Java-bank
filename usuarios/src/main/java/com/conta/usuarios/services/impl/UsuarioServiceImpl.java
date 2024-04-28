@@ -2,17 +2,22 @@ package com.conta.usuarios.services.impl;
 
 import com.conta.usuarios.dtos.req.UsuarioRequestDto;
 import com.conta.usuarios.dtos.res.UsuarioResponseDto;
-import com.conta.usuarios.enums.RoleEnum;
 import com.conta.usuarios.model.Usuario;
 import com.conta.usuarios.repository.UsuarioRepository;
 import com.conta.usuarios.services.UsuarioService;
+
+import io.awspring.cloud.sqs.operations.SqsTemplate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +29,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private SqsTemplate sqsTemplate;
+
+    
     @Override
     public UsuarioResponseDto criarUsuarioService(UsuarioRequestDto usuarioDto) {
         // Verifica se o usuário já existe pelo e-mail
@@ -34,9 +43,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         // Criptografa a senha antes de salvar no banco de dados
         String senhaHash = passwordEncoder.encode(usuarioDto.senha());
 
+        // Define a data da conta como a data atual se não estiver definida no DTO de requisição
+        Date dataConta = usuarioDto.dataConta() != null ? usuarioDto.dataConta() : (Date) Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+
         // Cria um novo usuário com base nos dados fornecidos no DTO de requisição
         Usuario novoUsuario = new Usuario(
-                null,
+                UUID.randomUUID(),
                 usuarioDto.nome(),
                 usuarioDto.email(),
                 senhaHash,
@@ -44,30 +56,32 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuarioDto.dataNascimento(),
                 usuarioDto.endereco(),
                 usuarioDto.cep(),
-                RoleEnum.USER,
+                usuarioDto.role(),
                 usuarioDto.tipoConta(),
-                new Date(System.currentTimeMillis())
+                dataConta
         );
 
         // Salva o novo usuário no banco de dados
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
-        // Envie a mensagem para a fila SQS com texto simples
-        String queueUrl = "http://localhost:4566/000000000000/payments";
-        String messageBody = "ID do Pagamento: " + usuarioCriado.getId_usuario() + "\n" +
-                     "Valor: " + usuarioCriado.getValor() + "\n" +
-                     "Endereço: " + usuarioCriado.getEndereco();
-sqsTemplate.send(queueUrl, messageBody);
-
+        
+ // Envie a mensagem para a fila SQS com texto simples
+        String queueUrl = "http://localhost:4566/000000000000/usuarios";
+        String messageBody = "id_usuario: " + usuarioCriado.getId_usuario() + "\n" +
+              "tipo_conta: " + usuarioCriado.getTipoConta() + "\n" +
+              "data_conta: " + usuarioCriado.getDataConta();
+        sqsTemplate.send(queueUrl, messageBody);
         // Retorna um DTO de resposta com os dados do novo usuário
         return new UsuarioResponseDto(
-            usuarioCriado.getNome(), usuarioCriado.getEmail(), 
-            usuarioCriado.getCpf(), usuarioCriado.getDataNascimento(), usuarioCriado.getEndereco(), 
-            usuarioCriado.getTipoConta(), usuarioCriado.getDataConta()
-        );
-    }
-
+            usuarioCriado.getNome(),
+            usuarioCriado.getEmail(),
+            usuarioCriado.getCpf(),
+            usuarioCriado.getDataNascimento(), 
+            usuarioCriado.getEndereco(),
+            usuarioCriado.getTipoConta(),
+            usuarioCriado.getDataConta()
+    );      }
     @Override
-    public UsuarioResponseDto buscarUsuarioPorIdService(Long id) {
+    public UsuarioResponseDto buscarUsuarioPorIdService(UUID id) {
         // Busca um usuário pelo ID no banco de dados
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
@@ -105,7 +119,7 @@ sqsTemplate.send(queueUrl, messageBody);
     }
 
     @Override
-    public UsuarioResponseDto atualizarUsuarioService(Long id, UsuarioRequestDto usuarioDto) {
+    public UsuarioResponseDto atualizarUsuarioService(UUID id, UsuarioRequestDto usuarioDto) {
         // Busca o usuário pelo ID no banco de dados
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
@@ -143,7 +157,7 @@ sqsTemplate.send(queueUrl, messageBody);
     }
 
     @Override
-    public void deletarUsuarioService(Long id) {
+    public void deletarUsuarioService(UUID id) {
         // Remove o usuário do banco de dados pelo ID
         usuarioRepository.deleteById(id);
     }
