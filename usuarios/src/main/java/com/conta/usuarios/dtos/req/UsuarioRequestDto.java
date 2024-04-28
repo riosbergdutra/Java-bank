@@ -4,6 +4,7 @@ package com.conta.usuarios.dtos.req;
 
 
 import java.sql.Date;
+import java.util.UUID;
 
 import com.conta.usuarios.enums.RoleEnum;
 import com.conta.usuarios.enums.TipoConta;
@@ -11,7 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public record UsuarioRequestDto(
-   Long id_usuario,
+   UUID id_usuario,
    String nome,
    String email,
    String senha,
