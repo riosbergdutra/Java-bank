@@ -26,15 +26,14 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.GET, "/usuarios/listar").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/usuarios/atualizar/{id}").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.DELETE, "/usuarios/deletar/{id}").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/validar" ).permitAll()
-                .anyRequest().authenticated()
+        .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
+        .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/usuarios/listar").hasRole("ADMIN")        .requestMatchers(HttpMethod.PUT, "/usuarios/atualizar/{id}").hasRole("USER")
+        .requestMatchers(HttpMethod.DELETE, "/usuarios/deletar/{id}").hasAnyRole("USER")
 
-                )
+    .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/validar").permitAll()
+    .anyRequest().authenticated()
+)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
