@@ -34,23 +34,34 @@ public class SecurityFilter extends OncePerRequestFilter {
             String cpf = autenticacaoService.validaTokenJWT(token);
             Usuario usuario = usuarioRepository.findByCpf(cpf);
 
-            var autentication = new UsernamePasswordAuthenticationToken(usuario, null,usuario.getAuthorities());
+            if (usuario != null) {
+                var authorities = usuario.getAuthorities();
+                String username = usuario.getUsername();
+                
+                // Log das informações do usuário
+                System.out.println("Usuário autenticado: " + username);
+                System.out.println("Autoridades do usuário: " + authorities);
 
-            SecurityContextHolder.getContext().setAuthentication(autentication);
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                System.out.println("Usuário não encontrado para CPF: " + cpf);
+            }
         }
+
+        // Continua a execução da cadeia de filtros
         filterChain.doFilter(request, response);
     }
 
     public String extraiTokenHeader(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
 
-    if (authHeader == null) {
-        return null;
+        if (authHeader == null) {
+            return null;
+        }
+        if (!authHeader.split(" ")[0].equals("Bearer")) {
+            return null;
+        }
+        return authHeader.split(" ")[1];
     }
-    if (!authHeader.split(" ")[0].equals("Bearer")) {
-        return null;
-    }
-    return authHeader.split(" ")[1];
-    }
-    
 }
