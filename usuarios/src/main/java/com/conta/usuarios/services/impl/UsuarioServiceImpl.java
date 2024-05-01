@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,10 +40,11 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Criptografa a senha antes de salvar no banco de dados
         String senhaHash = passwordEncoder.encode(usuarioDto.senha());
-
-        // Define a data da conta como a data atual se não estiver definida no DTO de requisição
-        Date dataConta = usuarioDto.dataConta() != null ? usuarioDto.dataConta() : (Date) Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
-
+        // Obtém a data atual
+        LocalDate dataAtual = LocalDate.now();
+        // se não for fornecida pelo dto gera uma data atual
+        LocalDate dataConta = usuarioDto.dataConta() != null ? usuarioDto.dataConta() : dataAtual;
+        
         // Cria um novo usuário com base nos dados fornecidos no DTO de requisição
         Usuario novoUsuario = new Usuario(
                 UUID.randomUUID(),
@@ -53,9 +52,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuarioDto.email(),
                 senhaHash,
                 usuarioDto.cpf(),
-                usuarioDto.dataNascimento(),
-                usuarioDto.endereco(),
-                usuarioDto.cep(),
                 usuarioDto.role(),
                 usuarioDto.tipoConta(),
                 dataConta
@@ -63,8 +59,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Salva o novo usuário no banco de dados
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
-        
- // Envie a mensagem para a fila SQS com texto simples
+
+        // Envie a mensagem para a fila SQS com texto simples
         String queueUrl = "http://localhost:4566/000000000000/usuarios";
         String messageBody = "id_usuario: " + usuarioCriado.getId_usuario() + "\n" +
               "tipo_conta: " + usuarioCriado.getTipoConta() + "\n" +
@@ -75,8 +71,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuarioCriado.getNome(),
             usuarioCriado.getEmail(),
             usuarioCriado.getCpf(),
-            usuarioCriado.getDataNascimento(), 
-            usuarioCriado.getEndereco(),
             usuarioCriado.getTipoConta(),
             usuarioCriado.getDataConta()
     );      }
@@ -92,8 +86,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.getNome(),
                     usuario.getEmail(),
                     usuario.getCpf(),
-                    usuario.getDataNascimento(),
-                    usuario.getEndereco(),
                     usuario.getTipoConta(),
                     usuario.getDataConta()
             );
@@ -112,8 +104,8 @@ public class UsuarioServiceImpl implements UsuarioService {
                         usuario.getNome(),
                         usuario.getEmail(),
                         usuario.getCpf(),
-                        usuario.getDataNascimento(), usuario.getEndereco(),
-                        usuario.getTipoConta(), usuario.getDataConta()
+                        usuario.getTipoConta(), 
+                        usuario.getDataConta()
                 ))
                 .collect(Collectors.toList());
     }
@@ -133,9 +125,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             String senhaHash = passwordEncoder.encode(usuarioDto.senha());
             usuario.setSenha(senhaHash);
             usuario.setCpf(usuarioDto.cpf());
-            usuario.setDataNascimento(usuarioDto.dataNascimento());
-            usuario.setEndereco(usuarioDto.endereco());
-            usuario.setCep(usuarioDto.cep());
             usuario.setTipoConta(usuarioDto.tipoConta());
             usuario.setDataConta(usuarioDto.dataConta());
 
@@ -147,8 +136,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.getNome(),
                     usuario.getEmail(),
                     usuario.getCpf(),
-                    usuario.getDataNascimento(),
-                    usuario.getEndereco(),
                     usuario.getTipoConta(),
                     usuario.getDataConta()
             );
