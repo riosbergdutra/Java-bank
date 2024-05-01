@@ -1,7 +1,7 @@
 package com.conta.usuarios.dtos.res;
 //res de response
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 import com.conta.usuarios.enums.TipoConta;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,13 +11,13 @@ public record UsuarioResponseDto(
     String nome,
     String email,
     String cpf,
-    Date dataNascimento,
-    String endereco,
     TipoConta tipoConta,
-    Date dataConta
+    LocalDate dataConta
 ) {
 
-   public static UsuarioResponseDto fromJson(String json) {
+   
+
+public static UsuarioResponseDto fromJson(String json) {
       if (json == null || json.isEmpty()) {
           throw new IllegalArgumentException("A string JSON fornecida está vazia ou nula");
       }
