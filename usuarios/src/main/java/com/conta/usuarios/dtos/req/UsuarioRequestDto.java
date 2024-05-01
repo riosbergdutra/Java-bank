@@ -3,7 +3,7 @@ package com.conta.usuarios.dtos.req;
 
 
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.conta.usuarios.enums.RoleEnum;
@@ -17,12 +17,9 @@ public record UsuarioRequestDto(
    String email,
    String senha,
    String cpf,
-   Date dataNascimento,
-   String endereco,
-   String cep,
    RoleEnum role,
    TipoConta tipoConta,
-   Date dataConta) {
+   LocalDate dataConta) {
 
     public static UsuarioRequestDto fromJson(String json) {
       if (json == null || json.isEmpty()) {

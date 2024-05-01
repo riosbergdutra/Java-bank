@@ -2,7 +2,7 @@ package com.conta.usuarios.model;
 
 
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -54,15 +54,6 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String cpf;
 
-    @Column(nullable = false, name= "data_nascimento")
-    private Date dataNascimento;
-
-    @Column(nullable = false)
-    private String endereco;
-
-    @Column(nullable = false)
-    private String cep;
-
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
 
@@ -71,7 +62,7 @@ public class Usuario implements UserDetails {
     private TipoConta tipoConta;
 
     @Column(name = "data_conta")
-    private Date dataConta;
+    private LocalDate dataConta;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
