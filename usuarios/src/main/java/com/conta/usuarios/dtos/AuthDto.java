@@ -1,6 +1,6 @@
 package com.conta.usuarios.dtos;
 
 public record AuthDto(
-String cpf,
+String email,
 String senha
 ) {}

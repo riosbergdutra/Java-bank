@@ -31,8 +31,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = extraiTokenHeader(request);
 
         if (token != null) {
-            String cpf = autenticacaoService.validaTokenJWT(token);
-            Usuario usuario = usuarioRepository.findByCpf(cpf);
+            String email = autenticacaoService.validaTokenJWT(token);
+            Usuario usuario = usuarioRepository.findByEmail(email);
 
             if (usuario != null) {
                 var authorities = usuario.getAuthorities();
@@ -45,7 +45,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                 var authentication = new UsernamePasswordAuthenticationToken(usuario, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
-                System.out.println("Usuário não encontrado para CPF: " + cpf);
+                System.out.println("Usuário não encontrado para email: " + email);
             }
         }
 

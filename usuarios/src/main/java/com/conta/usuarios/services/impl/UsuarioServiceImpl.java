@@ -34,7 +34,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto criarUsuarioService(UsuarioRequestDto usuarioDto) {
         // Verifica se o usuário já existe pelo e-mail
-        if (usuarioRepository.findByCpf(usuarioDto.cpf()) != null) {
+        if (usuarioRepository.findByEmail(usuarioDto.email()) != null) {
             throw new RuntimeException("Usuário já existe!");
         }
 

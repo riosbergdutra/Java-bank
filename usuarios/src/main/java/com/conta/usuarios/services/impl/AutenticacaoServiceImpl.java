@@ -25,17 +25,17 @@ public class AutenticacaoServiceImpl implements AutenticacaoService  { // Implem
     private UsuarioRepository usuarioRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String cpf) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByCpf(cpf);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByEmail(email);
         if (usuario == null) {
-            throw new UsernameNotFoundException("Usuário não encontrado: " + cpf);
+            throw new UsernameNotFoundException("Usuário não encontrado: " + email);
         }
         return usuario;
     }
 
     @Override
     public String obterToken(AuthDto authDto) {
-        Usuario usuario = usuarioRepository.findByCpf(authDto.cpf());
+        Usuario usuario = usuarioRepository.findByEmail(authDto.email());
         return geraTokenJwt(usuario);
     }
 

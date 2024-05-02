@@ -11,5 +11,5 @@ import com.conta.usuarios.model.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario,UUID> {
-    Usuario findByCpf(String cpf);
+    Usuario findByEmail(String email);
 } 
