@@ -28,7 +28,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
         .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
         .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasRole("ADMIN")
-        .requestMatchers(HttpMethod.GET, "/usuarios/listar").hasRole("ADMIN")        .requestMatchers(HttpMethod.PUT, "/usuarios/atualizar/{id}").hasRole("USER")
+        .requestMatchers(HttpMethod.GET, "/usuarios/listar").hasRole("ADMIN")        .requestMatchers(HttpMethod.PUT, "/usuarios/senha/{id}").hasRole("USER")
         .requestMatchers(HttpMethod.DELETE, "/usuarios/deletar/{id}").hasAnyRole("USER")
 
     .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/validar").permitAll()
