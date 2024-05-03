@@ -26,8 +26,8 @@ public class AutenticacaoController {
 
     @PostMapping("/validar")
     public ResponseEntity<Void> validarToken(@RequestBody String token) {
-        String cpf = autenticacaoService.validaTokenJWT(token);
-        if (!cpf.isEmpty()) {
+        String email = autenticacaoService.validaTokenJWT(token);
+        if (!email.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
