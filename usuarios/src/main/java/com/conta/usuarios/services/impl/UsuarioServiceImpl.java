@@ -1,7 +1,9 @@
 package com.conta.usuarios.services.impl;
 
 import com.conta.usuarios.dtos.req.UsuarioRequestDto;
+import com.conta.usuarios.dtos.req.UsuarioSenhaReqDto;
 import com.conta.usuarios.dtos.res.UsuarioResponseDto;
+import com.conta.usuarios.dtos.res.UsuarioSenhaResDto;
 import com.conta.usuarios.model.Usuario;
 import com.conta.usuarios.repository.UsuarioRepository;
 import com.conta.usuarios.services.UsuarioService;
@@ -111,7 +113,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioResponseDto atualizarUsuarioService(UUID id, UsuarioRequestDto usuarioDto) {
+    public UsuarioSenhaResDto atualizarUsuarioSenhaService(UUID id, UsuarioSenhaReqDto usuarioDto) {
         // Busca o usuário pelo ID no banco de dados
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
@@ -120,25 +122,14 @@ public class UsuarioServiceImpl implements UsuarioService {
             Usuario usuario = optionalUsuario.get();
 
             // Atualiza os dados do usuário com base nos dados fornecidos no DTO de requisição
-            usuario.setNome(usuarioDto.nome());
-            usuario.setEmail(usuarioDto.email());
             String senhaHash = passwordEncoder.encode(usuarioDto.senha());
             usuario.setSenha(senhaHash);
-            usuario.setCpf(usuarioDto.cpf());
-            usuario.setTipoConta(usuarioDto.tipoConta());
-            usuario.setDataConta(usuarioDto.dataConta());
 
             // Salva as alterações no banco de dados
             usuarioRepository.save(usuario);
 
             // Retorna um DTO de resposta com os dados atualizados do usuário
-            return new UsuarioResponseDto(
-                    usuario.getNome(),
-                    usuario.getEmail(),
-                    usuario.getCpf(),
-                    usuario.getTipoConta(),
-                    usuario.getDataConta()
-            );
+            return new UsuarioSenhaResDto("senha mudada com sucesso");
         }
         return null;
     }

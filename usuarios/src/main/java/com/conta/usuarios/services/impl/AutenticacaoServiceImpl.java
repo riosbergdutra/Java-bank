@@ -45,7 +45,7 @@ public class AutenticacaoServiceImpl implements AutenticacaoService  { // Implem
                 throw new UsernameNotFoundException("Usuário não encontrado");
             }
             Algorithm algorithm = Algorithm.HMAC256("my-secret");
-            return JWT.create().withIssuer("auth-api").withSubject(usuario.getCpf()).withExpiresAt(geraDataExpiracao()).sign(algorithm);
+            return JWT.create().withIssuer("auth-api").withSubject(usuario.getEmail()).withExpiresAt(geraDataExpiracao()).sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao tentar gerar o token" + exception.getMessage());
         }
