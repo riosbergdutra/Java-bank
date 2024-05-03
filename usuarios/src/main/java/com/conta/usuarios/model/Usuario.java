@@ -77,7 +77,7 @@ public class Usuario implements UserDetails {
     }
     @Override
     public String getUsername() {
-       return this.cpf;
+       return this.email;
     }
     @Override
     public boolean isAccountNonExpired() {
