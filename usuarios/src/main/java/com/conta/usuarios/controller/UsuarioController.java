@@ -1,7 +1,9 @@
 package com.conta.usuarios.controller;
 
 import com.conta.usuarios.dtos.req.UsuarioRequestDto;
+import com.conta.usuarios.dtos.req.UsuarioSenhaReqDto;
 import com.conta.usuarios.dtos.res.UsuarioResponseDto;
+import com.conta.usuarios.dtos.res.UsuarioSenhaResDto;
 import com.conta.usuarios.services.UsuarioService;
 
 
@@ -44,15 +46,16 @@ public class UsuarioController {
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
-    @PutMapping("/atualizar/{id}")
-    public ResponseEntity<UsuarioResponseDto> atualizarUsuario(@PathVariable UUID id, @RequestBody UsuarioRequestDto usuarioDto) {
-        UsuarioResponseDto responseDto = usuarioService.atualizarUsuarioService(id, usuarioDto);
-        if (responseDto != null) {
-            return new ResponseEntity<>(responseDto, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PutMapping("/senha/{id}")
+public ResponseEntity<UsuarioSenhaResDto> atualizarUsuarioSenha(@PathVariable UUID id, @RequestBody UsuarioSenhaReqDto usuarioDto) {
+    UsuarioSenhaResDto responseDto = usuarioService.atualizarUsuarioSenhaService(id, usuarioDto);
+    if (responseDto != null) {
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    } else {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+}
+
 
     @DeleteMapping("/deletar/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable UUID id) {
