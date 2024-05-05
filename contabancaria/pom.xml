@@ -8,7 +8,7 @@
 		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.contabancaria</groupId>
+	<groupId>com.contabanco</groupId>
 	<artifactId>contabancaria</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>contabancaria</name>
@@ -48,23 +48,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<dependency>
-    <groupId>io.awspring.cloud</groupId>
-    <artifactId>spring-cloud-aws-starter-sqs</artifactId>
-	</dependency>
-	</dependencies>
-	<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>io.awspring.cloud</groupId>
-            <artifactId>spring-cloud-aws-dependencies</artifactId>
-            <version>3.1.0</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
 
 	<build>
 		<plugins>

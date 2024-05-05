@@ -1,4 +1,4 @@
-package com.contabancaria.contabancaria;
+package com.contabanco.contabancaria;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
