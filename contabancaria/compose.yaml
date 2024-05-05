@@ -2,7 +2,7 @@ services:
   postgres:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=contabancaria'
+      - 'POSTGRES_DB=bancaria'
       - 'POSTGRES_PASSWORD=root'
       - 'POSTGRES_USER=root'
     ports:

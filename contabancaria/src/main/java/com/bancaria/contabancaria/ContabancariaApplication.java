@@ -1,4 +1,4 @@
-package com.contabanco.contabancaria;
+package com.bancaria.contabancaria;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

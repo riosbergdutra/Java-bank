@@ -8,7 +8,7 @@
 		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.contabanco</groupId>
+	<groupId>com.bancaria</groupId>
 	<artifactId>contabancaria</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>contabancaria</name>
