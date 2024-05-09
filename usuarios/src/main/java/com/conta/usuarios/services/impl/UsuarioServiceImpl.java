@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository;    
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -62,12 +62,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         // Salva o novo usuário no banco de dados
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
 
-        // Envie a mensagem para a fila SQS com texto simples
+    // Envie a mensagem para a fila SQS
         String queueUrl = "http://localhost:4566/000000000000/usuarios";
-        String messageBody = "id_usuario: " + usuarioCriado.getId_usuario() + "\n" +
-              "tipo_conta: " + usuarioCriado.getTipoConta() + "\n" +
-              "data_conta: " + usuarioCriado.getDataConta();
+        String messageBody = "idUsuario: " + usuarioCriado.getId_usuario() + "\n" +
+      "tipoConta: " + usuarioCriado.getTipoConta() + "\n" +
+      "dataConta: " + usuarioCriado.getDataConta() + "\n" +
+      "acao: criar";
+
         sqsTemplate.send(queueUrl, messageBody);
+
         // Retorna um DTO de resposta com os dados do novo usuário
         return new UsuarioResponseDto(
             usuarioCriado.getNome(),
@@ -136,7 +139,31 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void deletarUsuarioService(UUID id) {
-        // Remove o usuário do banco de dados pelo ID
-        usuarioRepository.deleteById(id);
+        try {
+            // Busca o usuário pelo ID no banco de dados
+            Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
+    
+            // Verifica se o usuário foi encontrado
+            if (optionalUsuario.isPresent()) {
+                Usuario usuario = optionalUsuario.get();
+    
+                // Envia a mensagem para a fila SQS com os dados do usuário
+                String queueUrl = "http://localhost:4566/000000000000/usuarios";
+                String messageBody = "idUsuario: " + usuario.getId_usuario() + "\n" +
+                        "acao: deletar";
+    
+                sqsTemplate.send(queueUrl, messageBody);
+                
+                // Remove o usuário do banco de dados pelo ID
+                usuarioRepository.deleteById(id);
+            } else {
+                System.out.println("Usuário não encontrado para o ID fornecido.");
+            }
+        } catch (Exception e) {
+            // Tratar exceções
+            e.printStackTrace();
+        }
     }
+    
+
 }
