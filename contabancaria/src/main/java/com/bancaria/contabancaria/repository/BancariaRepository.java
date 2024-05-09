@@ -1,5 +1,6 @@
 package com.bancaria.contabancaria.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,4 +10,6 @@ import com.bancaria.contabancaria.model.Bancaria;
 
 @Repository
 public interface BancariaRepository extends JpaRepository<Bancaria, UUID> {
+
+    Optional<Bancaria> findByIdUsuario(UUID idUsuario);
 }
