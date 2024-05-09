@@ -1,6 +1,7 @@
 package com.bancaria.contabancaria.services.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.bancaria.contabancaria.dtos.req.BancariaRequestDto;
 import com.bancaria.contabancaria.dtos.res.BancariaResponseDto;
+import com.bancaria.contabancaria.enums.TipoConta;
 import com.bancaria.contabancaria.model.Bancaria;
 import com.bancaria.contabancaria.repository.BancariaRepository;
 import com.bancaria.contabancaria.services.BancariaService;
@@ -39,6 +41,7 @@ public class BancariaServiceImpl implements BancariaService {
             contaBancariaSalva.getSaldo()
         );
     }
+    
     @Override
     public void deletarBancariaService(UUID idUsuario) {
         // Buscar a conta bancária pelo ID do usuário
@@ -54,45 +57,52 @@ public class BancariaServiceImpl implements BancariaService {
             System.out.println("Conta bancária não encontrada para o ID do usuário fornecido.");
         }
     }
+    
     @Override
-public void processarMensagemSQS(String mensagemSQS) {
-    try {
-        // Dividir a mensagem em linhas
-        String[] partes = mensagemSQS.split("\n");
+    public void processarMensagemSQS(String mensagemSQS) {
+        try {
+            // Dividir a mensagem em linhas
+            String[] partes = mensagemSQS.split("\n");
 
-        // Verificar se todos os campos necessários estão presentes
-        if (partes.length >= 1 && partes[0].startsWith("idUsuario")) {
-            // Extrair o ID do usuário da mensagem
-            UUID idUsuario = UUID.fromString(partes[0].split(": ")[1].trim());
+            // Verificar se todos os campos necessários estão presentes
+            if (partes.length >= 2 && partes[0].startsWith("idUsuario") && partes[1].startsWith("acao") && partes[1].contains("deletar")) {
+                // Extrair o ID do usuário da mensagem
+                UUID idUsuario = UUID.fromString(partes[0].split(": ")[1].trim());
 
-            // Verificar se há um campo adicional indicando a ação
-            if (partes.length >= 4 && partes[3].startsWith("acao")) {
+                // Chamar o serviço para deletar a conta bancária
+                deletarBancariaService(idUsuario);
+            } else if (partes.length >= 4 && partes[0].startsWith("idUsuario") && partes[1].startsWith("tipoConta") && partes[2].startsWith("dataConta") && partes[3].startsWith("acao")) {
+                // Extrair o ID do usuário da mensagem
+                UUID idUsuario = UUID.fromString(partes[0].split(": ")[1].trim());
+
+                // Extrair o tipoConta da mensagem
+            String tipoContaStr = partes[1].split(": ")[1].trim();
+            TipoConta tipoConta = TipoConta.valueOf(tipoContaStr);
+
+            // Extrair a dataConta da mensagem
+            String dataContaStr = partes[2].split(": ")[1].trim();
+            LocalDate dataConta = LocalDate.parse(dataContaStr);
+
+                // Extrair a ação da mensagem
                 String acao = partes[3].split(": ")[1].trim();
+
                 // Verificar a ação e chamar o serviço apropriado
                 if (acao.equals("criar")) {
                     // Criar um objeto BancariaRequestDto com base no idUsuario
-                    BancariaRequestDto bancariaDto = new BancariaRequestDto(null, idUsuario, null, null, null);
+                    BancariaRequestDto bancariaDto = new BancariaRequestDto(null, idUsuario, tipoConta, BigDecimal.ZERO, dataConta);
                     // Chamar o serviço para criar a conta bancária
                     criarBancariaService(bancariaDto);
-                } else if (acao.equals("deletar")) {
-                    // Chamar o serviço para deletar a conta bancária
-                    deletarBancariaService(idUsuario);
                 } else {
                     // Ação desconhecida
                     System.out.println("Ação desconhecida na mensagem SQS.");
                 }
             } else {
-                // Ação não especificada
-                System.out.println("Ação não especificada na mensagem SQS.");
+                // Mensagem incompleta
+                System.out.println("Mensagem incompleta ou inválida.");
             }
-        } else {
-            // Mensagem incompleta
-            System.out.println("Mensagem incompleta ou inválida.");
+        } catch (Exception e) {
+            // Tratar exceções
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        // Tratar exceções
-        e.printStackTrace();
     }
 }
-
-}    
