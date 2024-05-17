@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 
 import com.bancaria.contabancaria.services.BancariaService;
-
+//ouvidor da mensagem sqs
 @Component
 public class BancariaSqsListener {
     private final BancariaService bancariaService;
