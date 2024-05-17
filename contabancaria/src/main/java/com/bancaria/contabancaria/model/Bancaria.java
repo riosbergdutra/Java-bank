@@ -25,6 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+// entidade da conta bancaria
 public class Bancaria {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,6 +34,9 @@ public class Bancaria {
 
     @Column(unique = true, name = "id_usuario")
     private UUID idUsuario;
+
+    @Column(unique = true)
+    private String chave; 
 
      @Enumerated(EnumType.STRING)
     @Column(name = "tipo_conta")
