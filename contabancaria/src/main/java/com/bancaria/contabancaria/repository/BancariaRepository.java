@@ -12,4 +12,7 @@ import com.bancaria.contabancaria.model.Bancaria;
 public interface BancariaRepository extends JpaRepository<Bancaria, UUID> {
 
     Optional<Bancaria> findByIdUsuario(UUID idUsuario);
+    
+    Optional<Bancaria> findByChave(String chave);
+
 }
