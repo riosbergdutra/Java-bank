@@ -20,44 +20,63 @@ import com.bancaria.contabancaria.model.Bancaria;
 import com.bancaria.contabancaria.repository.BancariaRepository;
 import com.bancaria.contabancaria.services.BancariaService;
 
+import io.awspring.cloud.sqs.operations.SqsTemplate;
+
 @Service
 public class BancariaServiceImpl implements BancariaService {
 
     @Autowired
-    BancariaRepository bancariaRepository;
+    private BancariaRepository bancariaRepository;
+
+    @Autowired
+    private SqsTemplate sqsTemplate;
 
     @Override
-public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto transferenciaDto) {
-    // Buscar as contas bancárias de origem e destino pelo valor da chave
-    Optional<Bancaria> optionalContaOrigem = bancariaRepository.findByChave(transferenciaDto.ChaveOrigem());
-    Optional<Bancaria> optionalContaDestino = bancariaRepository.findByChave(transferenciaDto.ChaveDestino());
+    public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto transferenciaDto) {
+        // Buscar as contas bancárias de origem e destino pelo valor da chave
+        Optional<Bancaria> optionalContaOrigem = bancariaRepository.findByChave(transferenciaDto.ChaveOrigem());
+        Optional<Bancaria> optionalContaDestino = bancariaRepository.findByChave(transferenciaDto.ChaveDestino());
 
-    // Verificar se as contas foram encontradas
-    if (optionalContaOrigem.isPresent() && optionalContaDestino.isPresent()) {
-        Bancaria contaOrigem = optionalContaOrigem.get();
-        Bancaria contaDestino = optionalContaDestino.get();
+        // Verificar se as contas foram encontradas
+        if (optionalContaOrigem.isPresent() && optionalContaDestino.isPresent()) {
+            Bancaria contaOrigem = optionalContaOrigem.get();
+            Bancaria contaDestino = optionalContaDestino.get();
 
-        // Verificar se a conta de origem tem saldo suficiente para a transferência
-        if (contaOrigem.getSaldo().compareTo(transferenciaDto.valor()) >= 0) {
-            // Subtrair o valor da conta de origem e adicioná-lo à conta de destino
-            contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(transferenciaDto.valor()));
-            contaDestino.setSaldo(contaDestino.getSaldo().add(transferenciaDto.valor()));
+            // Verificar se a conta de origem tem saldo suficiente para a transferência
+            if (contaOrigem.getSaldo().compareTo(transferenciaDto.valor()) >= 0) {
+                // Subtrair o valor da conta de origem e adicioná-lo à conta de destino
+                contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(transferenciaDto.valor()));
+                contaDestino.setSaldo(contaDestino.getSaldo().add(transferenciaDto.valor()));
 
-            // Salvar as atualizações no banco de dados
-            bancariaRepository.save(contaOrigem);
-            bancariaRepository.save(contaDestino);
+                // Salvar as atualizações no banco de dados
+                bancariaRepository.save(contaOrigem);
+                bancariaRepository.save(contaDestino);
 
-            return new TransferenciaResponseDto(true, "Transferência realizada com sucesso.");
+                // Construir a mensagem para a fila SQS
+                String queueUrl = "http://localhost:4566/000000000000/transacao";
+                String messageBody = "Chave Origem: " + transferenciaDto.ChaveOrigem() +
+                        "ID Bancaria Origem: " + contaOrigem.getIdBancaria() + "\n" +
+                        "Chave Destino: " + transferenciaDto.ChaveDestino() + "\n" +
+                        "ID Usuario Origem: " + contaOrigem.getIdUsuario() + "\n" +
+                        "ID Bancaria Destino: " + contaDestino.getIdBancaria() + "\n" +
+                        "ID Usuario Destino: " + contaDestino.getIdUsuario() + "\n" +
+                        "Valor: " + transferenciaDto.valor();
+
+                // Envie a mensagem para a fila SQS
+                sqsTemplate.send(queueUrl, messageBody);
+
+                return new TransferenciaResponseDto(true, "Transferência realizada com sucesso.");
+            } else {
+                return new TransferenciaResponseDto(false,
+                        "A conta de origem não possui saldo suficiente para a transferência.");
+            }
         } else {
-            return new TransferenciaResponseDto(false, "A conta de origem não possui saldo suficiente para a transferência.");
+            return new TransferenciaResponseDto(false, "Uma das contas bancárias não foi encontrada.");
         }
-    } else {
-        return new TransferenciaResponseDto(false, "Uma das contas bancárias não foi encontrada.");
     }
-}
 
     @Override
-    public DepositoResponseDto depositar(DepositoRequestDto depositoRequestDto){
+    public DepositoResponseDto depositar(DepositoRequestDto depositoRequestDto) {
 
         Optional<Bancaria> optionalBancaria = bancariaRepository.findByChave(depositoRequestDto.chave());
 
@@ -81,7 +100,7 @@ public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto tr
         // Crie uma nova instância de Bancaria com base nos dados do DTO
         Bancaria bancaria = new Bancaria(
                 UUID.randomUUID(),
-                bancariaDto.idUsuario(),    
+                bancariaDto.idUsuario(),
                 null, // chave vazia porque o usuario vai adicionar depois
                 bancariaDto.tipoConta(),
                 BigDecimal.ZERO, // Defina o saldo inicial como zero
@@ -117,7 +136,6 @@ public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto tr
         }
     }
 
-
     @Override
     public void deletarBancariaService(UUID idUsuario) {
         // Buscar a conta bancária pelo ID do usuário
@@ -133,6 +151,7 @@ public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto tr
             System.out.println("Conta bancária não encontrada para o ID do usuário fornecido.");
         }
     }
+
     @Override
     public void processarMensagemSQS(String mensagemSQS) {
         try {
@@ -183,4 +202,4 @@ public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto tr
             e.printStackTrace();
         }
     }
-    }
+}
