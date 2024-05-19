@@ -1,6 +1,6 @@
 package com.bancaria.contabancaria.dtos.transferencia.response;
-//resposta da transferencia
-public record TransferenciaResponseDto(
+//resposta da transação
+public record TransacaoResponseDto(
     boolean sucesso,
     String mensagem
 ) {
