@@ -7,13 +7,14 @@ import com.bancaria.contabancaria.dtos.bancaria.response.BancariaResponseDto;
 import com.bancaria.contabancaria.dtos.chave.ChaveDto;
 import com.bancaria.contabancaria.dtos.deposito.request.DepositoRequestDto;
 import com.bancaria.contabancaria.dtos.deposito.response.DepositoResponseDto;
-import com.bancaria.contabancaria.dtos.transferencia.request.TransferenciaRequestDto;
-import com.bancaria.contabancaria.dtos.transferencia.response.TransferenciaResponseDto;
+import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto;
+import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
+
 
 public interface BancariaService {
 
     //realiza transferencia pelas chaves
-    TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto transferenciaDto);
+    TransacaoResponseDto realizarTransacao(TransacaoRequestDto transferenciaDto);
 
     // recebe mensagem sqs e cria a bancaria para o usuario id
     BancariaResponseDto criarBancariaService(BancariaRequestDto bancariaDto);
