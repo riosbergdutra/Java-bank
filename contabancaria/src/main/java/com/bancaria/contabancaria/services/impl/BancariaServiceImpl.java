@@ -13,8 +13,8 @@ import com.bancaria.contabancaria.dtos.bancaria.response.BancariaResponseDto;
 import com.bancaria.contabancaria.dtos.chave.ChaveDto;
 import com.bancaria.contabancaria.dtos.deposito.request.DepositoRequestDto;
 import com.bancaria.contabancaria.dtos.deposito.response.DepositoResponseDto;
-import com.bancaria.contabancaria.dtos.transferencia.request.TransferenciaRequestDto;
-import com.bancaria.contabancaria.dtos.transferencia.response.TransferenciaResponseDto;
+import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto;
+import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
 import com.bancaria.contabancaria.enums.TipoConta;
 import com.bancaria.contabancaria.model.Bancaria;
 import com.bancaria.contabancaria.repository.BancariaRepository;
@@ -32,7 +32,7 @@ public class BancariaServiceImpl implements BancariaService {
     private SqsTemplate sqsTemplate;
 
     @Override
-    public TransferenciaResponseDto realizarTransferencia(TransferenciaRequestDto transferenciaDto) {
+    public TransacaoResponseDto realizarTransacao(TransacaoRequestDto transferenciaDto) {
         // Buscar as contas bancárias de origem e destino pelo valor da chave
         Optional<Bancaria> optionalContaOrigem = bancariaRepository.findByChave(transferenciaDto.ChaveOrigem());
         Optional<Bancaria> optionalContaDestino = bancariaRepository.findByChave(transferenciaDto.ChaveDestino());
@@ -65,13 +65,13 @@ public class BancariaServiceImpl implements BancariaService {
                 // Envie a mensagem para a fila SQS
                 sqsTemplate.send(queueUrl, messageBody);
 
-                return new TransferenciaResponseDto(true, "Transferência realizada com sucesso.");
+                return new TransacaoResponseDto(true, "Transferência realizada com sucesso.");
             } else {
-                return new TransferenciaResponseDto(false,
+                return new TransacaoResponseDto(false,
                         "A conta de origem não possui saldo suficiente para a transferência.");
             }
         } else {
-            return new TransferenciaResponseDto(false, "Uma das contas bancárias não foi encontrada.");
+            return new TransacaoResponseDto(false, "Uma das contas bancárias não foi encontrada.");
         }
     }
 
