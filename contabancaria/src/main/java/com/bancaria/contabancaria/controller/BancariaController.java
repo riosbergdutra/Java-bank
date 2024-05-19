@@ -14,8 +14,8 @@ import java.util.UUID;
 import com.bancaria.contabancaria.dtos.chave.ChaveDto;
 import com.bancaria.contabancaria.dtos.deposito.request.DepositoRequestDto;
 import com.bancaria.contabancaria.dtos.deposito.response.DepositoResponseDto;
-import com.bancaria.contabancaria.dtos.transferencia.request.TransferenciaRequestDto;
-import com.bancaria.contabancaria.dtos.transferencia.response.TransferenciaResponseDto;
+import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto;
+import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
 import com.bancaria.contabancaria.services.BancariaService;
 
 @RestController
@@ -45,8 +45,8 @@ public ResponseEntity<ChaveDto> adicionarChave(@PathVariable UUID id, @RequestBo
 
     //metodo post para fazer transferencia de dinheiro
     @PostMapping("/transferencia")
-    public ResponseEntity<TransferenciaResponseDto> realizarTransferencia(@RequestBody TransferenciaRequestDto transferenciaDto) {
-        TransferenciaResponseDto responseDto = bancariaService.realizarTransferencia(transferenciaDto);
+    public ResponseEntity<TransacaoResponseDto> realizarTransacao(@RequestBody TransacaoRequestDto transferenciaDto) {
+        TransacaoResponseDto responseDto = bancariaService.realizarTransacao(transferenciaDto);
         return ResponseEntity.ok(responseDto);
     }
 }
