@@ -32,48 +32,58 @@ public class BancariaServiceImpl implements BancariaService {
     private SqsTemplate sqsTemplate;
 
     @Override
-    public TransacaoResponseDto realizarTransacao(TransacaoRequestDto transferenciaDto) {
-        // Buscar as contas bancárias de origem e destino pelo valor da chave
-        Optional<Bancaria> optionalContaOrigem = bancariaRepository.findByChave(transferenciaDto.ChaveOrigem());
-        Optional<Bancaria> optionalContaDestino = bancariaRepository.findByChave(transferenciaDto.ChaveDestino());
+public TransacaoResponseDto realizarTransacao(TransacaoRequestDto transferenciaDto) {
+    // Buscar as contas bancárias de origem e destino pelo valor da chave
+    Optional<Bancaria> optionalContaOrigem = bancariaRepository.findByChave(transferenciaDto.ChaveOrigem());
+    Optional<Bancaria> optionalContaDestino = bancariaRepository.findByChave(transferenciaDto.ChaveDestino());
 
-        // Verificar se as contas foram encontradas
-        if (optionalContaOrigem.isPresent() && optionalContaDestino.isPresent()) {
-            Bancaria contaOrigem = optionalContaOrigem.get();
-            Bancaria contaDestino = optionalContaDestino.get();
+    // Verificar se as contas foram encontradas
+    if (optionalContaOrigem.isPresent() && optionalContaDestino.isPresent()) {
+        Bancaria contaOrigem = optionalContaOrigem.get();
+        Bancaria contaDestino = optionalContaDestino.get();
 
-            // Verificar se a conta de origem tem saldo suficiente para a transferência
-            if (contaOrigem.getSaldo().compareTo(transferenciaDto.valor()) >= 0) {
-                // Subtrair o valor da conta de origem e adicioná-lo à conta de destino
-                contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(transferenciaDto.valor()));
-                contaDestino.setSaldo(contaDestino.getSaldo().add(transferenciaDto.valor()));
+        // Verificar se a conta de origem tem saldo suficiente para a transferência
+        if (contaOrigem.getSaldo().compareTo(transferenciaDto.valor()) >= 0) {
+            // Subtrair o valor da conta de origem e adicioná-lo à conta de destino
+            contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(transferenciaDto.valor()));
+            contaDestino.setSaldo(contaDestino.getSaldo().add(transferenciaDto.valor()));
 
-                // Salvar as atualizações no banco de dados
-                bancariaRepository.save(contaOrigem);
-                bancariaRepository.save(contaDestino);
+            // Salvar as atualizações no banco de dados
+            bancariaRepository.save(contaOrigem);
+            bancariaRepository.save(contaDestino);
 
-                // Construir a mensagem para a fila SQS
-                String queueUrl = "http://localhost:4566/000000000000/transacao";
-                String messageBody = "Chave Origem: " + transferenciaDto.ChaveOrigem() +
-                        "ID Bancaria Origem: " + contaOrigem.getIdBancaria() + "\n" +
-                        "Chave Destino: " + transferenciaDto.ChaveDestino() + "\n" +
-                        "ID Usuario Origem: " + contaOrigem.getIdUsuario() + "\n" +
-                        "ID Bancaria Destino: " + contaDestino.getIdBancaria() + "\n" +
-                        "ID Usuario Destino: " + contaDestino.getIdUsuario() + "\n" +
-                        "Valor: " + transferenciaDto.valor();
+            // Construir a mensagem para a fila SQS
+            // Construir a mensagem para a fila SQS
+            String queueUrl = "http://localhost:4566/000000000000/transacao";
+            String messageBody = "Chave Origem: " + transferenciaDto.ChaveOrigem() + "\n" +
+                    "ID Bancaria Origem: " + contaOrigem.getIdBancaria() + "\n" +
+                    "Chave Destino: " + transferenciaDto.ChaveDestino() + "\n" +
+                    "ID Usuario Origem: " + contaOrigem.getIdUsuario() + "\n" +
+                    "ID Bancaria Destino: " + contaDestino.getIdBancaria() + "\n" +
+                    "ID Usuario Destino: " + contaDestino.getIdUsuario() + "\n" +
+                    "Tipo da Transacao: "
+                    + transferenciaDto.tipoTransacao()
+                    + "\n" +
+                    "Valor: " + transferenciaDto.valor() + "\n" +
+                    "data Transacao: "
+                    + (transferenciaDto.dataTransacao() != null ? transferenciaDto.dataTransacao()
+                            : LocalDate.now());
 
-                // Envie a mensagem para a fila SQS
-                sqsTemplate.send(queueUrl, messageBody);
+            // Envie a mensagem para a fila SQS
+            sqsTemplate.send(queueUrl, messageBody);
 
-                return new TransacaoResponseDto(true, "Transferência realizada com sucesso.");
-            } else {
-                return new TransacaoResponseDto(false,
-                        "A conta de origem não possui saldo suficiente para a transferência.");
-            }
+            // retorno quando funcionar
+            return new TransacaoResponseDto(true, "Transferência realizada com sucesso.");
+            //retornos quando der erro
         } else {
-            return new TransacaoResponseDto(false, "Uma das contas bancárias não foi encontrada.");
+            return new TransacaoResponseDto(false,
+                    "A conta de origem não possui saldo suficiente para a transferência.");
         }
+    } else {
+        return new TransacaoResponseDto(false, "Uma das contas bancárias não foi encontrada.");
     }
+}
+
 
     @Override
     public DepositoResponseDto depositar(DepositoRequestDto depositoRequestDto) {
