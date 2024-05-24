@@ -47,7 +47,7 @@ public class Historico {
     private UUID idUsuarioDestino;
 
     @Column(name = "chave_destino", nullable = false)
-    private UUID idChaveDestino;
+    private String chaveDestino;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_transacao", nullable = false)
@@ -58,5 +58,4 @@ public class Historico {
 
     @Column(name = "valor", nullable = false)
     private BigDecimal valor;
-
 }
