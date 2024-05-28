@@ -6,6 +6,7 @@ import com.historico.historicotransacao.dtos.historico.res.HistoricoTransacaoRes
 import com.historico.historicotransacao.model.Historico;
 import com.historico.historicotransacao.repository.HistoricoRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -13,9 +14,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -33,93 +35,128 @@ class TransacaoServiceImplTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
-    void testProcessarMensagemSQS_ValidMessage() {
-        // Mocking the input message
-        String mensagemSQS = "Chave Origem: ABC123\n" +
-                             "ID Bancaria Origem: 123e4567-e89b-12d3-a456-556642440000\n" +
-                             "Chave Destino: XYZ456\n" +
-                             "ID Usuario Origem: 123e4567-e89b-12d3-a456-556642440001\n" +
-                             "ID Bancaria Destino: 123e4567-e89b-12d3-a456-556642440002\n" +
-                             "ID Usuario Destino: 123e4567-e89b-12d3-a456-556642440003\n" +
-                             "Tipo da Transacao: DEBITO\n" +
-                             "Valor: 100.00\n" +
-                             "data Transacao: 2024-05-25";
+    @Nested
+    class ProcessarMensagemSQSTests {
+        @Test
+        void testProcessarMensagemSQS_ValidMessage() {
+            String mensagemSQS = "Chave Origem: ABC123\n" +
+                    "ID Bancaria Origem: 123e4567-e89b-12d3-a456-556642440000\n" +
+                    "Chave Destino: XYZ456\n" +
+                    "ID Usuario Origem: 123e4567-e89b-12d3-a456-556642440001\n" +
+                    "ID Bancaria Destino: 123e4567-e89b-12d3-a456-556642440002\n" +
+                    "ID Usuario Destino: 123e4567-e89b-12d3-a456-556642440003\n" +
+                    "Tipo da Transacao: DEBITO\n" +
+                    "Valor: 100.00\n" +
+                    "data Transacao: 2024-05-25";
 
-        // Printing the received message
-        System.out.println("Mensagem recebida do SQS:");
-        System.out.println(mensagemSQS);
+            when(historicoRepository.save(any())).thenReturn(new Historico(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "ABC123",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "XYZ456",
+                    TipoTransacao.DEBITO,
+                    LocalDate.now(),
+                    BigDecimal.valueOf(100.00)
+            ));
 
-        // Setting up the expected behavior of the repository
-        when(historicoRepository.save(any())).thenReturn(new Historico(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "ABC123",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "XYZ456",
-                TipoTransacao.DEBITO,
-                LocalDate.now(),
-                BigDecimal.valueOf(100.00)
-        ));
+            transacaoService.processarMensagemSQS(mensagemSQS);
 
-        // Calling the method under test
-        transacaoService.processarMensagemSQS(mensagemSQS);
-
-        // Verifying if the save method was called
-        verify(historicoRepository, times(1)).save(any());
+            verify(historicoRepository, times(1)).save(any());
+            System.out.println("Teste 'processarMensagemSQS_ValidMessage' executado com sucesso!");
+        }
     }
 
-    @Test
-    void testSalvarTransacao() {
-        // Creating a sample request
-        HistoricoTransacaoRequest request = new HistoricoTransacaoRequest(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "ABC123",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "XYZ456",
-                TipoTransacao.DEBITO,
-                LocalDate.now(),
-                BigDecimal.valueOf(100.00)
-        );
+    @Nested
+    class SalvarTransacaoTests {
+        @Test
+        void testSalvarTransacao() {
+            HistoricoTransacaoRequest request = new HistoricoTransacaoRequest(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "ABC123",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "XYZ456",
+                    TipoTransacao.DEBITO,
+                    LocalDate.now(),
+                    BigDecimal.valueOf(100.00)
+            );
 
-        // Printing the received request
-        System.out.println("Request recebida:");
-        System.out.println(request);
+            when(historicoRepository.save(any())).thenReturn(new Historico(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "ABC123",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "XYZ456",
+                    TipoTransacao.DEBITO,
+                    LocalDate.now(),
+                    BigDecimal.valueOf(100.00)
+            ));
 
-        // Mocking the behavior of repository save method
-        when(historicoRepository.save(any())).thenReturn(new Historico(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "ABC123",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "XYZ456",
-                TipoTransacao.DEBITO,
-                LocalDate.now(),
-                BigDecimal.valueOf(100.00)
-        ));
+            HistoricoTransacaoResponse response = transacaoService.salvarTransacao(request);
 
-        // Calling the method under test
-        HistoricoTransacaoResponse response = transacaoService.salvarTransacao(request);
+            assertEquals("ABC123", response.chaveOrigem());
+            assertEquals("XYZ456", response.chaveDestino());
+            assertEquals(TipoTransacao.DEBITO, response.tipoTransacao());
+            assertEquals(BigDecimal.valueOf(100.00), response.valor());
+            assertEquals(LocalDate.now(), response.dataTransacao());
 
-        // Printing the response
-        System.out.println("Resposta obtida:");
-        System.out.println(response);
+            verify(historicoRepository, times(1)).save(any());
+            System.out.println("Teste 'testSalvarTransacao' executado com sucesso!");
+        }
+    }
 
-        // Verifying the returned response
-        assertEquals("ABC123", response.chaveOrigem());
-        assertEquals("XYZ456", response.chaveDestino());
-        assertEquals(TipoTransacao.DEBITO, response.tipoTransacao());
-        assertEquals(BigDecimal.valueOf(100.00), response.valor());
-        assertEquals(LocalDate.now(), response.dataTransacao());
+    @Nested
+    class BuscarTransacaoPorIdTests {
+        @Test
+        void testBuscarTransacaoPorId_DeveRetornarTransacao_QuandoIdExistir() {
+            UUID idTransacao = UUID.randomUUID();
+            Historico historico = new Historico(
+                    idTransacao,
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "ABC123",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "XYZ456",
+                    TipoTransacao.DEBITO,
+                    LocalDate.now(),
+                    BigDecimal.valueOf(100.00)
+            );
 
-        // Verifying if the save method was called
-        verify(historicoRepository, times(1)).save(any());
+            when(historicoRepository.findById(idTransacao)).thenReturn(Optional.of(historico));
+
+            HistoricoTransacaoResponse response = transacaoService.buscarTransacaoPorId(idTransacao);
+
+            assertNotNull(response);
+            assertEquals("ABC123", response.chaveOrigem());
+            assertEquals("XYZ456", response.chaveDestino());
+            assertEquals(TipoTransacao.DEBITO, response.tipoTransacao());
+            assertEquals(BigDecimal.valueOf(100.00), response.valor());
+            assertEquals(LocalDate.now(), response.dataTransacao());
+
+            System.out.println("Teste 'testBuscarTransacaoPorId_DeveRetornarTransacao_QuandoIdExistir' executado com sucesso!");
+        }
+
+        @Test
+        void testBuscarTransacaoPorId_DeveLancarExcecao_QuandoIdNaoExistir() {
+            UUID idTransacao = UUID.randomUUID();
+
+            when(historicoRepository.findById(idTransacao)).thenReturn(Optional.empty());
+
+            RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+                transacaoService.buscarTransacaoPorId(idTransacao);
+            });
+
+            assertEquals("Transação não encontrada com o ID: " + idTransacao, thrown.getMessage());
+
+            System.out.println("Teste 'testBuscarTransacaoPorId_DeveLancarExcecao_QuandoIdNaoExistir' executado com sucesso!");
+        }
     }
 }
