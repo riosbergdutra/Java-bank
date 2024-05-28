@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -87,5 +88,22 @@ public class TransacaoServiceImpl implements TransacaoService {
                 historicoSalvo.getTipoTransacao(),
                 historicoSalvo.getValor(),
                 historicoSalvo.getDataTransacao());
+    }
+
+
+    @Override
+    public HistoricoTransacaoResponse buscarTransacaoPorId(UUID id) {
+        Optional<Historico> historicoOpt = historicoRepository.findById(id);
+        if (historicoOpt.isPresent()) {
+            Historico historico = historicoOpt.get();
+            return new HistoricoTransacaoResponse(
+                    historico.getChaveOrigem(),
+                    historico.getChaveDestino(),
+                    historico.getTipoTransacao(),
+                    historico.getValor(),
+                    historico.getDataTransacao());
+        } else {
+            throw new RuntimeException("Transação não encontrada com o ID: " + id);
+        }
     }
 }
