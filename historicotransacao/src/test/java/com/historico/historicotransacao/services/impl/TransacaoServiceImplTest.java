@@ -65,7 +65,6 @@ class TransacaoServiceImplTest {
             transacaoService.processarMensagemSQS(mensagemSQS);
 
             verify(historicoRepository, times(1)).save(any());
-            System.out.println("Teste 'processarMensagemSQS_ValidMessage' executado com sucesso!");
         }
     }
 
@@ -108,7 +107,6 @@ class TransacaoServiceImplTest {
             assertEquals(LocalDate.now(), response.dataTransacao());
 
             verify(historicoRepository, times(1)).save(any());
-            System.out.println("Teste 'testSalvarTransacao' executado com sucesso!");
         }
     }
 
@@ -141,7 +139,6 @@ class TransacaoServiceImplTest {
             assertEquals(BigDecimal.valueOf(100.00), response.valor());
             assertEquals(LocalDate.now(), response.dataTransacao());
 
-            System.out.println("Teste 'testBuscarTransacaoPorId_DeveRetornarTransacao_QuandoIdExistir' executado com sucesso!");
         }
 
         @Test
@@ -156,7 +153,6 @@ class TransacaoServiceImplTest {
 
             assertEquals("Transação não encontrada com o ID: " + idTransacao, thrown.getMessage());
 
-            System.out.println("Teste 'testBuscarTransacaoPorId_DeveLancarExcecao_QuandoIdNaoExistir' executado com sucesso!");
         }
     }
 }
