@@ -45,7 +45,7 @@ public class CartaoServiceTest {
 
         when(cartaoRepository.existsByCvv(any(Integer.class))).thenReturn(false);
 
-        CriarCartaoResponse response = cartaoService.processarMensagemSQS(mensagemSQS);
+        CriarCartaoResponse response = cartaoService.processarMensagemSQSCriarCartao(mensagemSQS);
 
         assertTrue(response.sucesso());
         assertEquals("Cartão criado com sucesso.", response.mensagem());
@@ -56,7 +56,7 @@ public class CartaoServiceTest {
         String mensagemSQS = "ID da Conta Bancária: " + UUID.randomUUID().toString() + "\n" +
                              "ID do Usuário: " + UUID.randomUUID().toString();
 
-        CriarCartaoResponse response = cartaoService.processarMensagemSQS(mensagemSQS);
+        CriarCartaoResponse response = cartaoService.processarMensagemSQSCriarCartao(mensagemSQS);
 
         assertTrue(!response.sucesso());
         assertEquals("Mensagem incompleta ou inválida.", response.mensagem());
