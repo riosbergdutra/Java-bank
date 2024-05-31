@@ -1,6 +1,7 @@
 package com.cartao.cartoes.services;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class CartaoService {
     private CartaoRepository cartaoRepository;
 
     // Método para processar mensagem SQS e salvar um novo cartão
-    public CriarCartaoResponse processarMensagemSQS(String mensagemSQS) {
+    public CriarCartaoResponse processarMensagemSQSCriarCartao(String mensagemSQS) {
         try {
             // Dividir a mensagem em linhas
             String[] partes = mensagemSQS.split("\n");
@@ -60,7 +61,7 @@ public class CartaoService {
 
     void criarCartaoService(CriarCartaoRequest criarCartaoDto, int cvv) {
         Cartao cartao = new Cartao(
-                UUID.randomUUID(), criarCartaoDto.idUsuario(), criarCartaoDto.idBancaria(), cvv, StatusCartao.BLOQUEADO,
+                UUID.randomUUID(), criarCartaoDto.idBancaria(), criarCartaoDto.idUsuario(), cvv, StatusCartao.BLOQUEADO,
                 null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, criarCartaoDto.saldoBancaria());
 
         cartaoRepository.save(cartao);
@@ -74,5 +75,47 @@ public class CartaoService {
             cvv = 100 + random.nextInt(900); // Gera um número aleatório entre 100 e 999
         } while (cartaoRepository.existsByCvv(cvv)); // Verifica se o CVV já existe no banco de dados
         return cvv;
+    }
+
+    
+    public CriarCartaoResponse processarMensagemSQSAtualizarSaldo(String mensagemSQS) {
+        try {
+            // Dividir a mensagem em linhas
+            String[] partes = mensagemSQS.split("\n");
+
+            // Verificar se todos os campos necessários estão presentes
+            if (partes.length >= 2 &&
+                    partes[0].startsWith("ID da Conta Bancária") &&
+                    partes[1].startsWith("Valor")) {
+
+                // Extrair os dados da mensagem
+                UUID idBancaria = UUID.fromString(partes[0].split(": ")[1].trim());
+                BigDecimal valor = new BigDecimal(partes[1].split(": ")[1].trim());
+
+                // Buscar o cartão associado à conta bancária
+                Optional<Cartao> optionalCartao = cartaoRepository.findByIdBancaria(idBancaria);
+
+                if (optionalCartao.isPresent()) {
+                    Cartao cartao = optionalCartao.get();
+
+                    // Atualizar o saldo do cartão
+                    cartao.setSaldoBancaria(valor);
+
+                    // Salvar a atualização no banco de dados
+                    cartaoRepository.save(cartao);
+
+                    return new CriarCartaoResponse(true, "Saldo do cartão atualizado com sucesso.");
+                } else {
+                    return new CriarCartaoResponse(false, "Cartão não encontrado para a conta bancária fornecida.");
+                }
+            } else {
+                // Mensagem incompleta ou inválida
+                return new CriarCartaoResponse(false, "Mensagem incompleta ou inválida.");
+            }
+        } catch (Exception e) {
+            // Tratar exceções
+            e.printStackTrace();
+            return new CriarCartaoResponse(false, "Erro ao processar a mensagem: " + e.getMessage());
+        }
     }
 }
