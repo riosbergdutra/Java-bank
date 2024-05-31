@@ -53,10 +53,8 @@ class TransacaoServiceImplTest {
                     UUID.randomUUID(),
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "ABC123",
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "XYZ456",
                     TipoTransacao.DEBITO,
                     LocalDate.now(),
                     BigDecimal.valueOf(100.00)
@@ -76,10 +74,8 @@ class TransacaoServiceImplTest {
                     UUID.randomUUID(),
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "ABC123",
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "XYZ456",
                     TipoTransacao.DEBITO,
                     LocalDate.now(),
                     BigDecimal.valueOf(100.00)
@@ -89,10 +85,8 @@ class TransacaoServiceImplTest {
                     UUID.randomUUID(),
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "ABC123",
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "XYZ456",
                     TipoTransacao.DEBITO,
                     LocalDate.now(),
                     BigDecimal.valueOf(100.00)
@@ -100,8 +94,6 @@ class TransacaoServiceImplTest {
 
             HistoricoTransacaoResponse response = transacaoService.salvarTransacao(request);
 
-            assertEquals("ABC123", response.chaveOrigem());
-            assertEquals("XYZ456", response.chaveDestino());
             assertEquals(TipoTransacao.DEBITO, response.tipoTransacao());
             assertEquals(BigDecimal.valueOf(100.00), response.valor());
             assertEquals(LocalDate.now(), response.dataTransacao());
@@ -119,10 +111,8 @@ class TransacaoServiceImplTest {
                     idTransacao,
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "ABC123",
                     UUID.randomUUID(),
                     UUID.randomUUID(),
-                    "XYZ456",
                     TipoTransacao.DEBITO,
                     LocalDate.now(),
                     BigDecimal.valueOf(100.00)
@@ -133,8 +123,6 @@ class TransacaoServiceImplTest {
             HistoricoTransacaoResponse response = transacaoService.buscarTransacaoPorId(idTransacao);
 
             assertNotNull(response);
-            assertEquals("ABC123", response.chaveOrigem());
-            assertEquals("XYZ456", response.chaveDestino());
             assertEquals(TipoTransacao.DEBITO, response.tipoTransacao());
             assertEquals(BigDecimal.valueOf(100.00), response.valor());
             assertEquals(LocalDate.now(), response.dataTransacao());
