@@ -19,7 +19,7 @@ public class CartaoSqsListener {
             System.out.println("Mensagem SQS recebida: " + mensagemSQS);
 
             // Você pode chamar o serviço de conta bancária diretamente ou converter a String para o formato desejado, se necessário
-            cartaoService.processarMensagemSQS(mensagemSQS);
+            cartaoService.processarMensagemSQSCriarCartao(mensagemSQS);
         } catch (Exception e) {
             // Tratamento de exceção adequado, se necessário
             e.printStackTrace();
