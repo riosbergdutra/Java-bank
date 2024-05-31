@@ -39,8 +39,6 @@ class TransacaoControllerTest {
 void testBuscarTransacaoPorId_DeveRetornarTransacao_QuandoIdExistir() {
     UUID idTransacao = UUID.randomUUID();
     HistoricoTransacaoResponse historicoResponseMock = new HistoricoTransacaoResponse(
-            "ABC123",
-            "XYZ456",
             TipoTransacao.DEBITO, // Ajuste aqui para o Enum correspondente
             BigDecimal.valueOf(100.00),
             LocalDate.now()
