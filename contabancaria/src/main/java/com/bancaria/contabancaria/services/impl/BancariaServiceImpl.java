@@ -54,9 +54,7 @@ public class BancariaServiceImpl implements BancariaService {
 
                 // Construir a mensagem para a fila SQS
                 String queueUrl = "http://localhost:4566/000000000000/transacao";
-                String messageBody = "Chave Origem: " + transferenciaDto.ChaveOrigem() + "\n" +
-                        "ID Bancaria Origem: " + contaOrigem.getIdBancaria() + "\n" +
-                        "Chave Destino: " + transferenciaDto.ChaveDestino() + "\n" +
+                String messageBody = "ID Bancaria Origem: " + contaOrigem.getIdBancaria() + "\n" +
                         "ID Usuario Origem: " + contaOrigem.getIdUsuario() + "\n" +
                         "ID Bancaria Destino: " + contaDestino.getIdBancaria() + "\n" +
                         "ID Usuario Destino: " + contaDestino.getIdUsuario() + "\n" +
@@ -70,6 +68,9 @@ public class BancariaServiceImpl implements BancariaService {
 
                 // Envie a mensagem para a fila SQS
                 sqsTemplate.send(queueUrl, messageBody);
+
+                enviarAtualizacaoSaldoParaCartao(contaOrigem.getIdBancaria(), contaOrigem.getSaldo());
+                enviarAtualizacaoSaldoParaCartao(contaDestino.getIdBancaria(), contaDestino.getSaldo());
 
                 // retorno quando funcionar
                 return new TransacaoResponseDto(true, "Transferência realizada com sucesso.");
@@ -97,6 +98,9 @@ public class BancariaServiceImpl implements BancariaService {
             // Salvar a atualização no banco de dados
             bancariaRepository.save(bancaria);
 
+            // Enviar a atualização do saldo para o cartão associado
+            enviarAtualizacaoSaldoParaCartao(bancaria.getIdBancaria(), bancaria.getSaldo());
+
             return new DepositoResponseDto(bancaria.getSaldo());
         } else {
             throw new IllegalArgumentException("Conta bancária não encontrada para a chave fornecida.");
@@ -117,14 +121,14 @@ public class BancariaServiceImpl implements BancariaService {
         // Salve a nova conta bancária no banco de dados
         Bancaria contaBancariaSalva = bancariaRepository.save(bancaria);
 
-          // Construir a mensagem para a fila SQS
-          String queueUrl = "http://localhost:4566/000000000000/cartao";
-          String messageBody = "ID da Conta Bancária: " + contaBancariaSalva.getIdBancaria() + "\n" +
-          "ID do Usuário: " + contaBancariaSalva.getIdUsuario()  + "\n" +
-          "Saldo: " + contaBancariaSalva.getSaldo();
+        // Construir a mensagem para a fila SQS
+        String queueUrl = "http://localhost:4566/000000000000/cartao";
+        String messageBody = "ID da Conta Bancária: " + contaBancariaSalva.getIdBancaria() + "\n" +
+                "ID do Usuário: " + contaBancariaSalva.getIdUsuario() + "\n" +
+                "Saldo: " + contaBancariaSalva.getSaldo();
 
-          // Envie a mensagem para a fila SQS
-          sqsTemplate.send(queueUrl, messageBody);
+        // Envie a mensagem para a fila SQS
+        sqsTemplate.send(queueUrl, messageBody);
 
         // Retorne um DTO de resposta com os dados da conta bancária criada
         return new BancariaResponseDto(
@@ -205,7 +209,7 @@ public class BancariaServiceImpl implements BancariaService {
                     BancariaRequestDto bancariaDto = new BancariaRequestDto(null, idUsuario, tipoConta, BigDecimal.ZERO,
                             dataConta);
                     // Chamar o serviço para criar a conta bancária
-                        criarBancariaService(bancariaDto);
+                    criarBancariaService(bancariaDto);
                 } else {
                     // Ação desconhecida
                     System.out.println("Ação desconhecida na mensagem SQS.");
@@ -219,4 +223,23 @@ public class BancariaServiceImpl implements BancariaService {
             e.printStackTrace();
         }
     }
+
+    public void enviarAtualizacaoSaldoParaCartao(UUID idBancaria, BigDecimal novoSaldo) {
+        // Buscar o ID do usuário associado à conta bancária
+        Optional<Bancaria> optionalBancaria = bancariaRepository.findById(idBancaria);
+
+    if (optionalBancaria.isPresent()) {
+    
+            // Construir a mensagem para a fila SQS
+            String queueUrl = "http://localhost:4566/000000000000/atualizasaldo";
+            String messageBody = "ID da Conta Bancária: " + idBancaria + "\n" + "Valor: " + novoSaldo;
+    
+            // Envie a mensagem para a fila SQS
+            sqsTemplate.send(queueUrl, messageBody);
+        } else {
+            // Usuário não encontrado para a conta bancária fornecida
+            throw new IllegalStateException("Usuário não encontrado para a conta bancária fornecida.");
+        }
+    }    
+
 }
