@@ -37,17 +37,11 @@ public class Historico {
     @Column(name = "id_usuario_origem")
     private UUID idUsuarioOrigem;
 
-    @Column(name = "chave_origem", nullable = false)
-    private String chaveOrigem;
-
     @Column(name = "id_bancaria_destino")
     private UUID idBancariaDestino;
 
     @Column(name = "id_usuario_destino")
     private UUID idUsuarioDestino;
-
-    @Column(name = "chave_destino", nullable = false)
-    private String chaveDestino;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_transacao", nullable = false)
