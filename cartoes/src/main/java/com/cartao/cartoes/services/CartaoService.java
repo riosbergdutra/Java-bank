@@ -38,12 +38,15 @@ public class CartaoService {
                 UUID idUsuario = UUID.fromString(partes[1].split(": ")[1].trim());
                 BigDecimal saldo = new BigDecimal(partes[2].split(": ")[1].trim());
 
+                 // Gerar número da conta aleatório e único
+                 String numeroConta = gerarNumeroDeCartao();
+
                 // Gerar CVV aleatório
-                int cvv = generateUniqueCVV();
+                String cvv = gerarCVV();
 
                 // Criar um CartaoRequest
-                CriarCartaoRequest criarCartaoRequest = new CriarCartaoRequest(null, idBancaria, idUsuario, cvv, null,
-                        null, null, null, saldo);
+                CriarCartaoRequest criarCartaoRequest = new CriarCartaoRequest(null, idBancaria, idUsuario, cvv, numeroConta,
+                        null, null, null, null, saldo);
 
                 // Salvar o novo cartão no banco de dados
                 criarCartaoService(criarCartaoRequest, cvv);
@@ -59,24 +62,66 @@ public class CartaoService {
         }
     }
 
-    void criarCartaoService(CriarCartaoRequest criarCartaoDto, int cvv) {
+    void criarCartaoService(CriarCartaoRequest criarCartaoDto, String cvv) {
         Cartao cartao = new Cartao(
-                UUID.randomUUID(), criarCartaoDto.idBancaria(), criarCartaoDto.idUsuario(), cvv, StatusCartao.BLOQUEADO,
+                UUID.randomUUID(), criarCartaoDto.idBancaria(), criarCartaoDto.idUsuario(), cvv,  criarCartaoDto.numeroCartao() ,StatusCartao.BLOQUEADO,
                 null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, criarCartaoDto.saldoBancaria());
 
         cartaoRepository.save(cartao);
     }
 
-    // Método para gerar um CVV aleatório e garantir unicidade no banco de dados
-    int generateUniqueCVV() {
+    public String gerarNumeroDeCartao() {
         Random random = new Random();
-        int cvv;
-        do {
-            cvv = 100 + random.nextInt(900); // Gera um número aleatório entre 100 e 999
-        } while (cartaoRepository.existsByCvv(cvv)); // Verifica se o CVV já existe no banco de dados
+        StringBuilder cardNumber = new StringBuilder("512345");
+    
+        // Gera os próximos 10 dígitos do número do cartão
+        for (int i = 0; i < 10; i++) {
+            cardNumber.append(random.nextInt(10));
+        }
+    
+        // Calcula o dígito de verificação usando o algoritmo de Luhn
+        int luhnDigit = calculateLuhnDigit(cardNumber.toString());
+    
+        // Adiciona o dígito de verificação ao número do cartão
+        cardNumber.append(luhnDigit);
+    
+        // Verifica se o número do cartão gerado já existe no banco de dados
+        while (cartaoRepository.existsByNumeroCartao(cardNumber.toString())) {
+            // Se o número já existe, gera um novo número de cartão
+            cardNumber.replace(6, 16, ""); // Remove os 10 últimos dígitos
+            for (int i = 0; i < 10; i++) {
+                cardNumber.append(random.nextInt(10));
+            }
+            // Recalcula o dígito de verificação
+            luhnDigit = calculateLuhnDigit(cardNumber.toString());
+            cardNumber.append(luhnDigit);
+        }
+    
+        return cardNumber.toString();
+    }
+    
+    public String gerarCVV() {
+        Random random = new Random();
+        String cvv = String.format("%03d", random.nextInt(1000)); // Gera um CVV de 3 dígitos
         return cvv;
     }
 
+    public int calculateLuhnDigit(String cardNumber) {
+        int sum = 0;
+        boolean alternate = false;
+        for (int i = cardNumber.length() - 1; i >= 0; i--) {
+            int n = Integer.parseInt(cardNumber.substring(i, i + 1));
+            if (alternate) {
+                n *= 2;
+                if (n > 9) {
+                    n = (n % 10) + 1;
+                }
+            }
+            sum += n;
+            alternate = !alternate;
+        }
+        return (sum * 9) % 10;
+    }
     
     public CriarCartaoResponse processarMensagemSQSAtualizarSaldo(String mensagemSQS) {
         try {
