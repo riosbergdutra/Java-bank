@@ -1,6 +1,7 @@
 package com.cartao.cartoes.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -29,7 +30,6 @@ public class CartaoServiceTest {
     @Mock
     private CartaoRepository cartaoRepository;
 
-
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
@@ -39,15 +39,12 @@ public class CartaoServiceTest {
     public void testProcessarMensagemSQS_Sucesso() {
         String mensagemSQS = "ID da Conta Bancária: " + UUID.randomUUID().toString() + "\n" +
                              "ID do Usuário: " + UUID.randomUUID().toString() + "\n" +
-                             "Tipo de Conta: CONTA_CORRENTE\n" +
                              "Saldo: 1000.00\n" +
-                             "Data da Conta: 2023-01-01";
 
-        when(cartaoRepository.existsByCvv(any(Integer.class))).thenReturn(false);
-
+                             when(cartaoRepository.existsByCvv(any(String.class))).thenReturn(false);
         CriarCartaoResponse response = cartaoService.processarMensagemSQSCriarCartao(mensagemSQS);
 
-        assertTrue(response.sucesso());
+        assertTrue(response.sucesso(), "A operação falhou. Mensagem: " + response.mensagem());
         assertEquals("Cartão criado com sucesso.", response.mensagem());
     }
 
@@ -58,31 +55,24 @@ public class CartaoServiceTest {
 
         CriarCartaoResponse response = cartaoService.processarMensagemSQSCriarCartao(mensagemSQS);
 
-        assertTrue(!response.sucesso());
+        assertFalse(response.sucesso());
         assertEquals("Mensagem incompleta ou inválida.", response.mensagem());
-    }
-
-    @Test
-    public void testGenerateUniqueCVV() {
-        when(cartaoRepository.existsByCvv(any(Integer.class))).thenReturn(false);
-
-        int cvv = cartaoService.generateUniqueCVV();
-
-        assertTrue(cvv >= 100 && cvv <= 999);
     }
 
     @Test
     public void testCriarCartaoService() {
         UUID idUsuario = UUID.randomUUID();
         UUID idBancaria = UUID.randomUUID();
-        int cvv = 123;
+        String cvv = "123";
         BigDecimal saldo = new BigDecimal("1000.00");
 
+        String numeroCartao = cartaoService.gerarNumeroDeCartao(); // Gerar número de cartão único
+
         CriarCartaoRequest request = new CriarCartaoRequest(
-            null, idUsuario, idBancaria, cvv, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo
+            null, idBancaria, idUsuario, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo
         );
 
-        Cartao cartao = new Cartao(UUID.randomUUID(), idUsuario, idBancaria, cvv, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo);
+        Cartao cartao = new Cartao(UUID.randomUUID(), idUsuario, idBancaria, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo);
 
         when(cartaoRepository.save(any(Cartao.class))).thenReturn(cartao);
 
