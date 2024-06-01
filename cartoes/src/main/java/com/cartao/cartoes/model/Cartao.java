@@ -38,7 +38,10 @@ public class Cartao {
     private UUID idBancaria;
 
     @Column(name = "cvv")
-    private int cvv;
+    private String cvv;
+
+    @Column(name = "numero_cartao", unique = true)
+    private String numeroCartao;
 
     @Column(name = "status_cartao")
     @Enumerated(EnumType.STRING)
