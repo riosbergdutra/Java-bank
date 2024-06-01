@@ -10,8 +10,11 @@ import com.cartao.cartoes.model.Cartao;
 
 @Repository
 public interface CartaoRepository extends JpaRepository<Cartao, UUID> {
-    boolean existsByCvv(int cvv);
 
     Optional<Cartao> findByIdBancaria(UUID idBancaria);
+
+    boolean existsByNumeroCartao(String numeroConta);
+
+    Boolean existsByCvv(String cvv);
 }
 
