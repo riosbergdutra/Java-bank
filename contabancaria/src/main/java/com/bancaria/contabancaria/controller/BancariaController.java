@@ -3,6 +3,7 @@ package com.bancaria.contabancaria.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,8 @@ import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto
 import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
 import com.bancaria.contabancaria.services.BancariaService;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/bancaria")
 public class BancariaController {
@@ -25,25 +28,31 @@ public class BancariaController {
     @Autowired
     private BancariaService bancariaService;
 
-    //metodo post para adicionar uma chave na conta bancaria
+    // metodo post para adicionar uma chave na conta bancaria
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/adicionarchave/{id}")
-public ResponseEntity<ChaveDto> adicionarChave(@PathVariable UUID id, @RequestBody ChaveDto chaveDto) {
-    ChaveDto response = bancariaService.adicionarChave(id, chaveDto);
-    
-    if (response != null) {
-        return new ResponseEntity<>(chaveDto, HttpStatus.OK);
-    } else {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ChaveDto> adicionarChave(@PathVariable UUID id, @RequestBody ChaveDto chaveDto) {
+        ChaveDto response = bancariaService.adicionarChave(id, chaveDto);
+
+        if (response != null) {
+            return new ResponseEntity<>(chaveDto, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
-}
-    //metodo post para fazer deposito de dinheiro
-@PostMapping("/depositar")
+
+    // metodo post para fazer deposito de dinheiro
+    @Transactional
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PostMapping("/depositar")
     public ResponseEntity<DepositoResponseDto> depositar(@RequestBody DepositoRequestDto depositoRequestDto) {
         DepositoResponseDto responseDto = bancariaService.depositar(depositoRequestDto);
         return ResponseEntity.ok(responseDto);
     }
 
-    //metodo post para fazer transferencia de dinheiro
+    // metodo post para fazer transferencia de dinheiro
+    @Transactional
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/transferencia")
     public ResponseEntity<TransacaoResponseDto> realizarTransacao(@RequestBody TransacaoRequestDto transferenciaDto) {
         TransacaoResponseDto responseDto = bancariaService.realizarTransacao(transferenciaDto);
