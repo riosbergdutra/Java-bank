@@ -10,10 +10,14 @@ import org.springframework.stereotype.Service;
 
 import com.cartao.cartoes.dtos.criarcartao.req.CriarCartaoRequest;
 import com.cartao.cartoes.dtos.criarcartao.res.CriarCartaoResponse;
+import com.cartao.cartoes.dtos.pedircartao.req.PedirCartaoRequest;
+import com.cartao.cartoes.dtos.pedircartao.res.PedirCartaoResponse;
 import com.cartao.cartoes.enums.EnumCartao;
 import com.cartao.cartoes.enums.StatusCartao;
 import com.cartao.cartoes.model.Cartao;
 import com.cartao.cartoes.repository.CartaoRepository;
+
+import io.awspring.cloud.sqs.operations.SqsTemplate;
 
 @Service
 public class CartaoService {
@@ -21,6 +25,8 @@ public class CartaoService {
     @Autowired
     private CartaoRepository cartaoRepository;
 
+    @Autowired
+    private SqsTemplate sqsTemplate;
     // Método para processar mensagem SQS e salvar um novo cartão
     public CriarCartaoResponse processarMensagemSQSCriarCartao(String mensagemSQS) {
         try {
@@ -161,6 +167,28 @@ public class CartaoService {
             // Tratar exceções
             e.printStackTrace();
             return new CriarCartaoResponse(false, "Erro ao processar a mensagem: " + e.getMessage());
+        }
+    }
+
+    public PedirCartaoResponse pedirEntregaCartao(PedirCartaoRequest PedirCartaoRequest){
+        try {
+            // Construir a mensagem para a fila SQS
+            String queueUrl = "http://localhost:4566/000000000000/pedirCartao";
+            String messageBody = "ID do Usuário: " + PedirCartaoRequest.idUsuario() + "\n" +
+                    "Rua: " + PedirCartaoRequest.rua() + "\n" +
+                    "Cidade: " + PedirCartaoRequest.cidade() + "\n" +
+                    "Estado: " + PedirCartaoRequest.estado() + "\n" +
+                    "CEP: " + PedirCartaoRequest.cep() + "\n" +
+                    "Número: " + PedirCartaoRequest.numero() + "\n" +
+                    "Complemento: " + PedirCartaoRequest.complemento();
+
+            // Envie a mensagem para a fila SQS
+            sqsTemplate.send(queueUrl, messageBody);
+
+            return new PedirCartaoResponse(true, "Pedido de entrega do cartão enviado com sucesso.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new PedirCartaoResponse(false, "Erro ao enviar pedido de entrega do cartão: " + e.getMessage());
         }
     }
 }
