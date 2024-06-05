@@ -3,15 +3,12 @@ package com.conta.usuarios.model;
 
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.conta.usuarios.enums.RoleEnum;
+import com.conta.usuarios.dtos.req.LoginRequest;
 import com.conta.usuarios.enums.TipoConta;
 
 import jakarta.persistence.Column;
@@ -22,10 +19,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
@@ -33,10 +27,7 @@ import lombok.Setter;
 @Table(name = "usuarios")
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode(of = "id_usuario")
-public class Usuario implements UserDetails {
+public class Usuario  {
     @Id 
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(unique = true)
@@ -45,7 +36,7 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -55,7 +46,7 @@ public class Usuario implements UserDetails {
     private String cpf;
 
     @Enumerated(EnumType.STRING)
-    private RoleEnum role;
+    private Set<Role>  roles;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_conta")
@@ -64,36 +55,18 @@ public class Usuario implements UserDetails {
     @Column(name = "data_conta")
     private LocalDate dataConta;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        if(this.role == RoleEnum.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
-        else return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    public enum Role {
+        ADMIN,
+        USER;
+
+        public String getName() {
+            return this.name();
+        }
+    }
+      public boolean isLoginCorrect(LoginRequest loginRequest, BCryptPasswordEncoder passwordEncoder) {
+        return getEmail().equals(loginRequest.email()) && passwordEncoder.matches(loginRequest.senha(), getSenha());
     }
 
-
-    @Override
-    public String getPassword() {
-       return this.senha;
-    }
-    @Override
-    public String getUsername() {
-       return this.email;
-    }
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+  
 
 }
