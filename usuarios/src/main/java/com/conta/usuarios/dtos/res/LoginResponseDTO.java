@@ -1,4 +1,4 @@
 package com.conta.usuarios.dtos.res;
 
-public record LoginResponseDTO(String token) {
+public record LoginResponseDTO(String token, long expiresIn) {
 }
