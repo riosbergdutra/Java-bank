@@ -6,7 +6,6 @@ package com.conta.usuarios.dtos.req;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.conta.usuarios.enums.RoleEnum;
 import com.conta.usuarios.enums.TipoConta;
 
 
@@ -16,7 +15,6 @@ public record UsuarioRequestDto(
    String email,
    String senha,
    String cpf,
-   RoleEnum role,
    TipoConta tipoConta,
    LocalDate dataConta) {
     
