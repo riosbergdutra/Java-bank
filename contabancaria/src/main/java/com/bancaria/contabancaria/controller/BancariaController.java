@@ -19,7 +19,6 @@ import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto
 import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
 import com.bancaria.contabancaria.services.BancariaService;
 
-import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/bancaria")
@@ -42,7 +41,6 @@ public class BancariaController {
     }
 
     // metodo post para fazer deposito de dinheiro
-    @Transactional
     @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/depositar")
     public ResponseEntity<DepositoResponseDto> depositar(@RequestBody DepositoRequestDto depositoRequestDto) {
@@ -51,7 +49,6 @@ public class BancariaController {
     }
 
     // metodo post para fazer transferencia de dinheiro
-    @Transactional
     @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/transferencia")
     public ResponseEntity<TransacaoResponseDto> realizarTransacao(@RequestBody TransacaoRequestDto transferenciaDto) {
