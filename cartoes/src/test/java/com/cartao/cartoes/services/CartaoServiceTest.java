@@ -69,10 +69,10 @@ public class CartaoServiceTest {
         String numeroCartao = cartaoService.gerarNumeroDeCartao(); // Gerar número de cartão único
 
         CriarCartaoRequest request = new CriarCartaoRequest(
-            null, idBancaria, idUsuario, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo
+            null, idBancaria, idUsuario, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo, false
         );
 
-        Cartao cartao = new Cartao(UUID.randomUUID(), idUsuario, idBancaria, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo);
+        Cartao cartao = new Cartao(UUID.randomUUID(), idUsuario, idBancaria, cvv, numeroCartao, StatusCartao.BLOQUEADO, null, EnumCartao.BLOQUEADO, EnumCartao.BLOQUEADO, saldo, false);
 
         when(cartaoRepository.save(any(Cartao.class))).thenReturn(cartao);
 
