@@ -61,4 +61,7 @@ public class Cartao {
     @Column(name = "saldo_bancaria")
     private BigDecimal saldoBancaria;
 
+    @Column(name = "cartao_pedido")
+    private Boolean cartaoPedido;
+
 }
