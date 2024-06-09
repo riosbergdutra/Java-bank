@@ -1,10 +1,12 @@
 package com.cartao.cartoes.dtos.pedircartao.req;
 
+
 import java.util.UUID;
 
 import com.cartao.cartoes.enums.EstadoBrasil;
 
-public record PedirCartaoRequest(UUID idCartao, UUID idUsuario,
+public record PedirCartaoRequest(
+        UUID idCartao,
         String rua,
         String cidade,
         EstadoBrasil estado,
