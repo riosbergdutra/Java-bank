@@ -28,6 +28,7 @@ public class JwtService  { // Implementar a interface correta
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiryDuration))
                 .claim("scope", String.join(" ", user.getRoles().stream().map(r -> r.getName()).toArray(String[]::new)))
+                .claim("userId", user.getId_usuario())
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
