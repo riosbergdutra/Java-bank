@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS cartoes (
     senha VARCHAR(255) UNIQUE,
     debito VARCHAR(50),
     credito VARCHAR(50),
-    saldo_bancaria NUMERIC NOT NULL
+    saldo_bancaria NUMERIC NOT NULL,
+    cartao_pedido BOOLEAN
 );
 
