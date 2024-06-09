@@ -16,7 +16,8 @@ public record CriarCartaoRequest(
  String senha,
  EnumCartao debito,
  EnumCartao credito,
- BigDecimal saldoBancaria
+ BigDecimal saldoBancaria,
+ Boolean cartaoPedido
 )
 {
 
