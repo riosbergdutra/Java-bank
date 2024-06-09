@@ -194,7 +194,7 @@ public class CartaoService {
                 cartaoRepository.save(cartao);
 
                 // Construir a mensagem para a fila SQS
-                String queueUrl = "http://localhost:4566/000000000000/pedircartao";
+                String queueUrl = "http://localhost:4566/000000000000/entregacartao";
                 String messageBody = "id do Cartao: " + cartao.getIdCartao() + "\n" +
                         "id do Usuario: " + cartao.getIdUsuario() + "\n" +
                         "Rua: " + pedirCartaoRequest.rua() + "\n" +
