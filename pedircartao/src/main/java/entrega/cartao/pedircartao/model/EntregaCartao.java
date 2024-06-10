@@ -1,5 +1,6 @@
 package entrega.cartao.pedircartao.model;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import entrega.cartao.pedircartao.enums.EstadoBrasil;
@@ -51,4 +52,7 @@ public class EntregaCartao {
     
     @Column(name = "complemento")
     private String complemento;
+
+    @Column(name = "data_pedido")
+    private LocalDate DataPedido;
 }
