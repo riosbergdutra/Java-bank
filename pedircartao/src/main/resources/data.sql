@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS entregacartao (
     estado VARCHAR(255) NOT NULL,
     cep VARCHAR(255) NOT NULL,
     numero VARCHAR(255) NOT NULL,
-    complemento VARCHAR(255) NOT NULL
+    complemento VARCHAR(255) NOT NULL,
+    data_pedido DATE NOT NULL
 );
