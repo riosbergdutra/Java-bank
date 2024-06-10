@@ -17,6 +17,8 @@ import com.cartao.cartoes.dtos.pedircartao.req.PedirCartaoRequest;
 import com.cartao.cartoes.dtos.pedircartao.res.PedirCartaoResponse;
 import com.cartao.cartoes.services.CartaoService;
 
+import jakarta.validation.Valid;
+
 @RestController
 public class CartaoController {
 
@@ -25,21 +27,22 @@ public class CartaoController {
 
     @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/pedir-cartao/{id}")
-    public ResponseEntity<PedirCartaoResponse> pedirEntregaCartao(@RequestBody PedirCartaoRequest pedirCartaoRequest,
+    public ResponseEntity<PedirCartaoResponse> pedirEntregaCartao( @Valid @RequestBody PedirCartaoRequest pedirCartaoRequest,
             @PathVariable UUID id) {
         try {
-            PedirCartaoResponse response = cartaoService.pedirEntregaCartao(pedirCartaoRequest,id);
+            PedirCartaoResponse response = cartaoService.pedirEntregaCartao(pedirCartaoRequest, id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new PedirCartaoResponse(false,
-                    "Erro ao enviar pedido de entrega do cartão: The given id must not be null"));
+                    "Erro ao enviar pedido de entrega do cartão: " + e.getMessage()));
         }
     }
-    
+
     @PreAuthorize("hasAuthority('SCOPE_USER')")
     @PostMapping("/ativar-cartao/{id}")
-    public ResponseEntity<CriarCartaoResponse> ativarCartao(@PathVariable UUID id, @RequestBody AtivarCartaoRequest request) {
+    public ResponseEntity<CriarCartaoResponse> ativarCartao(@PathVariable UUID id,
+            @RequestBody AtivarCartaoRequest request) {
         try {
             CriarCartaoResponse response = cartaoService.ativarCartao(id, request);
             return ResponseEntity.ok(response);
