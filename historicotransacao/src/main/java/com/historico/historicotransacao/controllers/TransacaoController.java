@@ -26,7 +26,7 @@ public class TransacaoController {
         this.transacaoService = transacaoService;
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_BASIC')")
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
     @GetMapping("/transacoes/{id}")
     public ResponseEntity<HistoricoTransacaoResponse> buscarTransacaoPorId(@PathVariable UUID id) {
         try {
