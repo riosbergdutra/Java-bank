@@ -35,9 +35,7 @@ public class UsuarioService {
     public UsuarioResponseDto criarUsuarioService(UsuarioRequestDto usuarioDto) {
         Set<Usuario.Role> roles = Set.of(Usuario.Role.USER);
         // Obtém a data atual
-        LocalDate dataAtual = LocalDate.now();
         // se não for fornecida pelo dto gera uma data atual
-        LocalDate dataConta = usuarioDto.dataConta() != null ? usuarioDto.dataConta() : dataAtual;
         
         // Cria um novo usuário com base nos dados fornecidos no DTO de requisição
         Usuario novoUsuario = new Usuario();
@@ -48,7 +46,7 @@ public class UsuarioService {
         novoUsuario.setCpf(usuarioDto.cpf());
         novoUsuario.setRoles(roles);
         novoUsuario.setTipoConta(usuarioDto.tipoConta());
-        novoUsuario.setDataConta(dataConta);
+        novoUsuario.setDataConta(LocalDate.now());
 
         // Salva o novo usuário no banco de dados
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
@@ -72,11 +70,12 @@ public class UsuarioService {
         );
     }
 
-    public UsuarioResponseDto buscarUsuarioPorIdService(UUID id) {
-        // Busca um usuário pelo ID no banco de dados
+    public UsuarioResponseDto buscarUsuarioPorIdService(UUID id, UUID userId) {
+        if (!id.equals(userId)) {
+            return null;
+        }
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
-        // Verifica se o usuário foi encontrado
         if (optionalUsuario.isPresent()) {
             Usuario usuario = optionalUsuario.get();
             return new UsuarioResponseDto(
@@ -91,10 +90,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponseDto> listarUsuariosService() {
-        // Lista todos os usuários do banco de dados
         List<Usuario> usuarios = usuarioRepository.findAll();
-
-        // Converte a lista de usuários para uma lista de DTOs de resposta
         return usuarios.stream()
                 .map(usuario -> new UsuarioResponseDto(
                         usuario.getNome(),
@@ -106,56 +102,43 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public UsuarioSenhaResDto atualizarUsuarioSenhaService(UUID id, UsuarioSenhaReqDto usuarioDto) {
-        // Busca o usuário pelo ID no banco de dados
+    public UsuarioSenhaResDto atualizarUsuarioSenhaService(UUID id, UUID userId, UsuarioSenhaReqDto usuarioDto) {
+        if (!id.equals(userId)) {
+            return null;
+        }
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
-        // Verifica se o usuário foi encontrado
         if (optionalUsuario.isPresent()) {
             Usuario usuario = optionalUsuario.get();
-
-            // Atualiza os dados do usuário com base nos dados fornecidos no DTO de requisição
             String senhaHash = passwordEncoder.encode(usuarioDto.senha());
             usuario.setSenha(senhaHash);
-
-            // Salva as alterações no banco de dados
             usuarioRepository.save(usuario);
-
-            // Retorna um DTO de resposta com os dados atualizados do usuário
             return new UsuarioSenhaResDto("senha mudada com sucesso");
         }
         return null;
     }
 
-    public void deletarUsuarioService(UUID id) {
-        try {
-            // Busca o usuário pelo ID no banco de dados
-            Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
+    public void deletarUsuarioService(UUID id, UUID userId) {
+        if (!id.equals(userId)) {
+            throw new IllegalArgumentException("Usuário não autorizado");
+        }
+        Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
 
-            // Verifica se o usuário foi encontrado
-            if (optionalUsuario.isPresent()) {
-                Usuario usuario = optionalUsuario.get();
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
+            String queueUrl = "http://localhost:4566/000000000000/usuarios";
+            String messageBody = "idUsuario: " + usuario.getId_usuario() + "\n" +
+                    "acao: deletar";
 
-                // Envia a mensagem para a fila SQS com os dados do usuário
-                String queueUrl = "http://localhost:4566/000000000000/usuarios";
-                String messageBody = "idUsuario: " + usuario.getId_usuario() + "\n" +
-                        "acao: deletar";
-
-                sqsTemplate.send(queueUrl, messageBody);
-
-                // Remove o usuário do banco de dados pelo ID
-                usuarioRepository.deleteById(id);
-            } else {
-                System.out.println("Usuário não encontrado para o ID fornecido.");
-            }
-        } catch (Exception e) {
-            // Tratar exceções
-            e.printStackTrace();
+            sqsTemplate.send(queueUrl, messageBody);
+            usuarioRepository.deleteById(id);
         }
     }
+
     public Optional<Usuario> loginService(String email) {
-        return (usuarioRepository.findByEmail(email));
+        return usuarioRepository.findByEmail(email);
     }
+
     public BCryptPasswordEncoder getPasswordEncoder() {
         return passwordEncoder;
     }
