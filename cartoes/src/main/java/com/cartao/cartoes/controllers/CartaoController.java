@@ -28,14 +28,10 @@ public class CartaoController {
     public ResponseEntity<PedirCartaoResponse> pedirEntregaCartao(@Valid @RequestBody PedirCartaoRequest pedirCartaoRequest,
             @PathVariable UUID id, Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
-        // Verificar se o escopo do token JWT é adequado para acessar este recurso e se o ID do usuário é correspondente
-        if (!authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("SCOPE_USER")) || !userId.equals(id)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
 
         // Prossiga com o pedido de entrega do cartão
         try {
-            PedirCartaoResponse response = cartaoService.pedirEntregaCartao(pedirCartaoRequest, id);
+            PedirCartaoResponse response = cartaoService.pedirEntregaCartao(pedirCartaoRequest, id, userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,13 +47,10 @@ public class CartaoController {
             @RequestBody AtivarCartaoRequest request, Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         // Verificar se o escopo do token JWT é adequado para acessar este recurso e se o ID do usuário é correspondente
-        if (!authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("SCOPE_USER")) || !userId.equals(id)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
 
         // Prossiga com a ativação do cartão
         try {
-            CriarCartaoResponse response = cartaoService.ativarCartao(id, request);
+            CriarCartaoResponse response = cartaoService.ativarCartao(id, request, userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

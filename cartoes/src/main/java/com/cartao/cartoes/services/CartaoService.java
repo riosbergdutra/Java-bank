@@ -174,14 +174,17 @@ public class CartaoService {
         }
     }
 
-    public PedirCartaoResponse pedirEntregaCartao(PedirCartaoRequest pedirCartaoRequest, UUID id) {
+    public PedirCartaoResponse pedirEntregaCartao(PedirCartaoRequest pedirCartaoRequest, UUID id, UUID userId) {
+        Optional<Cartao> optionalCartao = cartaoRepository.findById(id);
+
         try {
             // Buscar o cartão correspondente ao pedido
-            Optional<Cartao> optionalCartao = cartaoRepository.findById(id);
 
             if (optionalCartao.isPresent()) {
                 Cartao cartao = optionalCartao.get();
-
+                if (!cartao.getIdUsuario().equals(userId)) {
+                    throw new IllegalArgumentException("Usuário não autorizado");
+                }
                 // Verificar se o cartão já foi pedido antes
                 if (cartao.getCartaoPedido()) {
                     return new PedirCartaoResponse(false, "Pedido de entrega do cartão já realizado anteriormente.");
@@ -219,13 +222,15 @@ public class CartaoService {
     }
 
 
-    public CriarCartaoResponse ativarCartao(UUID idCartao, AtivarCartaoRequest request) {
+    public CriarCartaoResponse ativarCartao(UUID id, AtivarCartaoRequest request, UUID userId) {
         try {
-            Optional<Cartao> optionalCartao = cartaoRepository.findById(idCartao);
+            Optional<Cartao> optionalCartao = cartaoRepository.findById(id);
     
             if (optionalCartao.isPresent()) {
                 Cartao cartao = optionalCartao.get();
-                
+                if (!cartao.getIdUsuario().equals(userId)) {
+                    throw new IllegalArgumentException("Usuário não autorizado");
+                }
                 // Verificar se os dados fornecidos correspondem ao cartão
                 if (request.numeroCartao().equals(cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4)) &&
                     request.cvv().equals(cartao.getCvv())) {
