@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import com.bancaria.contabancaria.dtos.chave.ChaveDto;
@@ -19,8 +18,6 @@ import com.bancaria.contabancaria.dtos.deposito.request.DepositoRequestDto;
 import com.bancaria.contabancaria.dtos.deposito.response.DepositoResponseDto;
 import com.bancaria.contabancaria.dtos.transferencia.request.TransacaoRequestDto;
 import com.bancaria.contabancaria.dtos.transferencia.response.TransacaoResponseDto;
-import com.bancaria.contabancaria.model.Bancaria;
-import com.bancaria.contabancaria.repository.BancariaRepository;
 import com.bancaria.contabancaria.services.BancariaService;
 
 @RestController
@@ -30,63 +27,47 @@ public class BancariaController {
     @Autowired
     private BancariaService bancariaService;
 
-    @Autowired
-    private BancariaRepository bancariaRepository;
-
-@PreAuthorize("hasAuthority('SCOPE_USER')")
-@PostMapping("/adicionarchave/{id}")
-public ResponseEntity<ChaveDto> adicionarChave(@PathVariable UUID id, @RequestBody ChaveDto chaveDto, Authentication authentication) {
-    UUID userId = UUID.fromString(authentication.getName());
-    Optional<Bancaria> optionalBancaria = bancariaRepository.findById(id);
-    if (optionalBancaria.isPresent()) {
-        Bancaria bancaria = optionalBancaria.get();
-        if (!bancaria.getIdUsuario().equals(userId)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PostMapping("/adicionarchave/{id}")
+    public ResponseEntity<ChaveDto> adicionarChave(@PathVariable UUID id, @RequestBody ChaveDto chaveDto, Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        try {
+            ChaveDto response = bancariaService.adicionarChave(id, userId, chaveDto);
+            if (response != null) {
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    } else {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    ChaveDto response = bancariaService.adicionarChave(id, chaveDto);
-
-    if (response != null) {
-        return new ResponseEntity<>(chaveDto, HttpStatus.OK);
-    } else {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-}
-
-
-  // método post para fazer depósito de dinheiro
-@PreAuthorize("hasAuthority('SCOPE_USER')")
-@PostMapping("/depositar")
-public ResponseEntity<DepositoResponseDto> depositar(@RequestBody DepositoRequestDto depositoRequestDto, Authentication authentication) {
-    UUID userId = UUID.fromString(authentication.getName());
-    Optional<Bancaria> optionalBancaria = bancariaRepository.findByIdUsuario(userId);
-    // Verificar se o escopo do token JWT é adequado para acessar este recurso
-    if (!authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("SCOPE_USER")) || !optionalBancaria.isPresent()) {
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PostMapping("/depositar")
+    public ResponseEntity<DepositoResponseDto> depositar(@RequestBody DepositoRequestDto depositoRequestDto, Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        try {
+            DepositoResponseDto responseDto = bancariaService.depositar(userId, depositoRequestDto);
+            return ResponseEntity.ok(responseDto);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-    // Se o escopo for válido e a conta bancária existir para o usuário, prosseguir com a lógica de depósito
-    DepositoResponseDto responseDto = bancariaService.depositar(depositoRequestDto);
-    return ResponseEntity.ok(responseDto);
-}
-
-// método post para fazer transferência de dinheiro
-@PreAuthorize("hasAuthority('SCOPE_USER')")
-@PostMapping("/transferencia")
-public ResponseEntity<TransacaoResponseDto> realizarTransacao(@RequestBody TransacaoRequestDto transferenciaDto, Authentication authentication) {
-    UUID userId = UUID.fromString(authentication.getName());
-    Optional<Bancaria> optionalBancaria = bancariaRepository.findByIdUsuario(userId);
-    // Verificar se o escopo do token JWT é adequado para acessar este recurso
-    if (!authentication.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("SCOPE_USER")) || !optionalBancaria.isPresent()) {
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PostMapping("/transferencia")
+    public ResponseEntity<TransacaoResponseDto> realizarTransacao(@RequestBody TransacaoRequestDto transferenciaDto, Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        try {
+            TransacaoResponseDto responseDto = bancariaService.realizarTransacao(userId, transferenciaDto);
+            if (responseDto.sucesso()) {
+                return ResponseEntity.ok(responseDto);
+            } else {
+                return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
-
-    // Se o escopo for válido e a conta bancária existir para o usuário, prosseguir com a lógica de transferência
-    TransacaoResponseDto responseDto = bancariaService.realizarTransacao(transferenciaDto);
-    return ResponseEntity.ok(responseDto);
-}
-
 }
