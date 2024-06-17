@@ -2,10 +2,14 @@ package com.historico.historicotransacao.services.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.historico.historicotransacao.Enum.TipoTransacao;
@@ -91,6 +95,11 @@ public class TransacaoServiceImpl implements TransacaoService {
         Optional<Historico> historicoOpt = historicoRepository.findById(id);
         if (historicoOpt.isPresent()) {
             Historico historico = historicoOpt.get();
+            UUID userId = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+            if (!historico.getIdUsuarioOrigem().equals(userId)) {
+                throw new SecurityException("Usuário não autorizado a acessar esta conta bancária.");
+            }
+
             return new HistoricoTransacaoResponse(
                     historico.getTipoTransacao(),
                     historico.getValor(),
@@ -98,5 +107,22 @@ public class TransacaoServiceImpl implements TransacaoService {
         } else {
             throw new RuntimeException("Transação não encontrada com o ID: " + id);
         }
+    }
+
+    @Override
+    public List<HistoricoTransacaoResponse> transacoesUsuario(UUID idUsuario) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UUID userId = UUID.fromString(authentication.getName());
+
+        if (!userId.equals(idUsuario)) {
+            throw new IllegalArgumentException("Usuário não autorizado");
+        }
+        List<Historico> historicos = historicoRepository.findAllByIdUsuarioOrigemOrIdUsuarioDestino(idUsuario, idUsuario);
+        return historicos.stream()
+                .map(historico -> new HistoricoTransacaoResponse(
+                        historico.getTipoTransacao(),
+                        historico.getValor(),
+                        historico.getDataTransacao()))
+                .collect(Collectors.toList());
     }
 }
