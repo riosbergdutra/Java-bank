@@ -2,16 +2,19 @@ package com.bancaria.contabancaria.services;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.bancaria.contabancaria.dtos.bancaria.request.BancariaRequestDto;
 import com.bancaria.contabancaria.dtos.bancaria.response.BancariaResponseDto;
-import com.bancaria.contabancaria.dtos.bancariasusuario.req.BancariasUsuarioIdRequest;
-import com.bancaria.contabancaria.dtos.bancariasusuario.res.BancariasdoUsuarioIdResponse;
+import com.bancaria.contabancaria.dtos.bancariasusuario.res.ContaBancariaResponse;
 import com.bancaria.contabancaria.dtos.chave.ChaveDto;
 import com.bancaria.contabancaria.dtos.deposito.request.DepositoRequestDto;
 import com.bancaria.contabancaria.dtos.deposito.response.DepositoResponseDto;
@@ -60,8 +63,7 @@ public class BancariaService {
                         "Tipo da Transacao: " + transferenciaDto.tipoTransacao() + "\n" +
                         "Valor: " + transferenciaDto.valor() + "\n" +
                         "data Transacao: "
-                        + (transferenciaDto.dataTransacao() != null ? transferenciaDto.dataTransacao()
-                                : LocalDate.now());
+                        + (LocalDate.now());
 
                 sqsTemplate.send(queueUrl, messageBody);
 
@@ -218,8 +220,35 @@ public class BancariaService {
             throw new IllegalStateException("Usuário não encontrado para a conta bancária fornecida.");
         }
     }
-    public BancariasdoUsuarioIdResponse bancariasdoUsuario(BancariasUsuarioIdRequest request, UUID idUsuario) {
-        Optional<Bancaria> optionalBancaria = bancariaRepository.findByIdUsuario(idUsuario);
+    
+    public List<ContaBancariaResponse> bancariasdoUsuario(UUID idUsuario)  {
+        List<Bancaria> contas = bancariaRepository.findByIdUsuarioOrderByDataConta(idUsuario);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UUID userId = UUID.fromString(authentication.getName());
 
+        if (!userId.equals(idUsuario)) {
+            throw new IllegalArgumentException("Usuário não autorizado");
+        }
+
+        return contas.stream()
+                .map(conta -> new ContaBancariaResponse(conta.getTipoConta(), conta.getSaldo()))
+                .collect(Collectors.toList());
+    }
+
+    public BancariaResponseDto buscarContaBancariaPorIdService(UUID idBancaria) {
+        Optional<Bancaria> optionalBancaria = bancariaRepository.findById(idBancaria);
+
+        if (optionalBancaria.isPresent()) {
+            Bancaria bancaria = optionalBancaria.get();
+
+            UUID userId = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+            if (!bancaria.getIdUsuario().equals(userId)) {
+                throw new SecurityException("Usuário não autorizado a acessar esta conta bancária.");
+            }
+
+            return new BancariaResponseDto(bancaria.getTipoConta(), bancaria.getSaldo());
+        } else {
+            throw new IllegalArgumentException("Conta bancária não encontrada para o ID fornecido.");
+        }
     }
 }
