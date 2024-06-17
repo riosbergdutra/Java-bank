@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +28,7 @@ public class TransacaoController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_USER')")
-    @GetMapping("/transacoes/{id}")
+    @GetMapping("/transacao/{id}")
     public ResponseEntity<HistoricoTransacaoResponse> buscarTransacaoPorId(@PathVariable UUID id) {
         try {
             HistoricoTransacaoResponse response = transacaoService.buscarTransacaoPorId(id);
@@ -35,6 +36,18 @@ public class TransacaoController {
         } catch (RuntimeException e) {
             System.err.println("Erro ao buscar transação por ID: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @GetMapping("/transacoes/{idUsuario}")
+    public ResponseEntity<List<HistoricoTransacaoResponse>> transacoesUsuario(@PathVariable UUID idUsuario) {
+        try {
+            List<HistoricoTransacaoResponse> response = transacaoService.transacoesUsuario(idUsuario);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 }
