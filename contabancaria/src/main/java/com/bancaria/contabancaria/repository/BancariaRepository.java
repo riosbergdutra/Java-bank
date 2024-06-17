@@ -1,5 +1,6 @@
 package com.bancaria.contabancaria.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,5 @@ public interface BancariaRepository extends JpaRepository<Bancaria, UUID> {
     
     Optional<Bancaria> findByChave(String chave);
 
+    List<Bancaria> findByIdUsuarioOrderByDataConta(UUID idUsuario);
 }
