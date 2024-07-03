@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "api-usuarios"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8080"]
+        labels:
+          application: "api-usuarios"
+
+  - job_name: "api-contabancaria"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8081"]
+        labels:
+          application: "api-contabancaria"
+
+  - job_name: "api-historicotransacao"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8082"]
+        labels:
+          application: "api-historicotransacao"
+
+  - job_name: "api-cartoes"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8083"]
+        labels:
+          application: "api-cartoes"
+
+  - job_name: "api-entregacartoes"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8084"]
+        labels:
+          application: "api-entregacartoes"
+
+  - job_name: "api-observabilidade"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["172.17.0.1:8085"]
+        labels:
+          application: "api-observabilidade"
